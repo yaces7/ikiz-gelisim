@@ -43,13 +43,12 @@
 
 
 body {
-  color: #ffffff;
-  /* Default text color */
-  background: linear-gradient(135deg, #020617 0%, #0f172a 40%, #2e1065 100%);
-  background-attachment: fixed;
+  color: #f1f5f9;
+  /* Slate-100 for better default readability on dark bg */
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+  /* Simpler dark gradient */
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
-  /* Removed global text-shadow to prevent muddy text on light cards */
 }
 
 /* Enhancing visibility for texts on glass backgrounds */

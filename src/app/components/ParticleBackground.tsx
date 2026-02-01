@@ -83,7 +83,7 @@ export default function ParticleBackground() {
                 },
                 detectRetina: true,
             }}
-            className="absolute inset-0 z-0 pointer-events-none" // Changed to z-0 so it sits on top of the gradient body but behind content
+            className="w-full h-full"
         />
     );
 }

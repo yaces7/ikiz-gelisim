@@ -63,7 +63,8 @@ function HomeContent() {
   return (
     <main className="min-h-screen relative overflow-x-hidden">
       {/* 3D Background */}
-      <div className="fixed inset-0 z-0">
+      {/* 3D Background */}
+      <div className="fixed inset-0 -z-10">
         <ParticleBackground />
       </div>
 
