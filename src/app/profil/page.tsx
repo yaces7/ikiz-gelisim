@@ -1,266 +1,227 @@
 
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
-
 import {
     Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
+    RadialLinearScale,
     PointElement,
     LineElement,
-    Title,
+    Filler,
     Tooltip,
     Legend,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Radar } from 'react-chartjs-2';
 
 ChartJS.register(
-    CategoryScale,
-    LinearScale,
+    RadialLinearScale,
     PointElement,
     LineElement,
-    Title,
+    Filler,
     Tooltip,
     Legend
 );
 
-// Mock Data Types - in real app, fetch from API
-type UserStats = {
-    independenceScore: number; // 0-100
-    completedTests: number;
-    completedScenarios: number;
-    weeklyStreak: number;
-    lastActivity: string;
-};
-
 export default function ProfilePage() {
-    return (
-        <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Yükleniyor...</div>}>
-            <ProfileContent />
-        </Suspense>
-    );
-}
-
-function ProfileContent() {
-    const { user, logout } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const router = useRouter();
-    const [stats, setStats] = useState<UserStats | null>(null);
-    const [chartData, setChartData] = useState<{ date: string; score: number }[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [profileData, setProfileData] = useState<any>(null);
 
     useEffect(() => {
-        if (!user) {
+        // Auth Check
+        const token = localStorage.getItem('token');
+        if (!token) {
             router.push('/giris');
             return;
         }
 
-        const fetchStats = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-
+        const fetchProfile = async () => {
             try {
                 const res = await fetch('/api/profile/stats', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
                 if (res.ok) {
-                    const data = await res.json();
-                    setStats(data.stats);
-                    setChartData(data.chartData);
-                } else {
-                    // Fallback for new users (or API error) - empty data
-                    setStats({
-                        independenceScore: 50, // Default mid
-                        completedTests: 0,
-                        completedScenarios: 0,
-                        weeklyStreak: 0,
-                        lastActivity: 'Henüz yok'
-                    });
+                    const json = await res.json();
+                    setProfileData(json);
                 }
-            } catch (err) {
-                console.error('Failed to fetch stats', err);
+            } catch (e) { console.error(e); } finally {
+                setLoading(false);
             }
         };
+        fetchProfile();
+    }, [router]);
 
-        fetchStats();
-    }, [user, router]);
+    if (loading) {
+        return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Profil Yükleniyor...</div>;
+    }
 
-    if (!user || !stats) return null;
+    if (!profileData) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Veri alınamadı.</div>;
+
+    const { user: levelInfo, stats, recentActivities } = profileData;
+
+    const radarChartData = {
+        labels: stats.radarLabels || ['Özerklik', 'Sınırlar', 'İletişim', 'Özgüven', 'Farkındalık'],
+        datasets: [
+            {
+                label: 'Mevcut Seviye',
+                data: stats.radarData || [50, 50, 50, 50, 50],
+                backgroundColor: 'rgba(59, 130, 246, 0.2)', // Blue-500 with opacity
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#fff',
+            },
+        ],
+    };
+
+    const radarOptions = {
+        scales: {
+            r: {
+                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                pointLabels: {
+                    color: '#94a3b8', // Slate-400
+                    font: { size: 12, weight: 'bold' as const },
+                },
+                ticks: { display: false, backdropColor: 'transparent' },
+                suggestedMin: 0,
+                suggestedMax: 100,
+            },
+        },
+        plugins: {
+            legend: { display: false },
+        },
+        maintainAspectRatio: false,
+    };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30 py-12 px-4">
-            <div className="max-w-6xl mx-auto space-y-8">
+        <div className="min-h-screen bg-slate-950 text-slate-100 font-sans py-24 px-4 overflow-hidden">
+
+            {/* Background Blobs */}
+            <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/20 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-900/20 rounded-full blur-[120px]" />
+            </div>
+
+            <div className="relative z-10 max-w-6xl mx-auto space-y-8">
 
                 {/* Header Section */}
-                <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
-
-                    {/* Avatar */}
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-4xl font-bold shadow-lg ring-4 ring-slate-800 z-10">
-                        {user.fullName?.[0].toUpperCase()}
-                    </div>
-
-                    {/* User Info */}
-                    <div className="flex-1 text-center md:text-left z-10">
-                        <h1 className="text-4xl font-black text-white mb-2">{user.fullName}</h1>
-                        <p className="text-slate-400 text-lg mb-4">@{user.username}</p>
-                        <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                            <span className="px-4 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-bold border border-green-500/20">
-                                Çevrimiçi
-                            </span>
-                            <span className="px-4 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-bold border border-blue-500/20">
-                                Hafta 2: Sınırlar
-                            </span>
+                <div className="flex flex-col md:flex-row items-center gap-8 glass p-8 rounded-3xl border border-white/5">
+                    <div className="relative">
+                        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-1">
+                            <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-5xl object-cover">
+                                👤
+                            </div>
+                        </div>
+                        <div className="absolute bottom-0 right-0 w-10 h-10 bg-green-500 rounded-full border-4 border-slate-900 flex items-center justify-center text-xs font-bold">
+                            Lv{levelInfo.level}
                         </div>
                     </div>
 
-                    {/* Action */}
-                    <div className="z-10">
-                        <button
-                            onClick={logout}
-                            className="px-6 py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl font-bold hover:bg-red-500/20 transition-colors"
+                    <div className="text-center md:text-left flex-1">
+                        <h1 className="text-3xl font-bold text-white mb-2">{user?.username || 'İkiz Kullanıcı'}</h1>
+                        <p className="text-blue-400 font-medium tracking-wide mb-4">{levelInfo.title}</p>
+
+                        {/* XP Bar */}
+                        <div className="w-full max-w-md bg-slate-800 h-4 rounded-full overflow-hidden relative">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${levelInfo.nextLevelProgress}%` }}
+                                transition={{ duration: 1.5, ease: "circOut" }}
+                                className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                            />
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2 text-right max-w-md">Sonraki seviyeye %{Math.round(100 - levelInfo.nextLevelProgress)} kaldı</p>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                        <div className="p-4 bg-slate-800/50 rounded-2xl border border-white/5">
+                            <div className="text-2xl font-black text-white">{stats.totalPoints}</div>
+                            <div className="text-xs text-slate-400 font-bold uppercase">Puan</div>
+                        </div>
+                        <div className="p-4 bg-slate-800/50 rounded-2xl border border-white/5">
+                            <div className="text-2xl font-black text-white">{stats.gamesPlayed}</div>
+                            <div className="text-xs text-slate-400 font-bold uppercase">Oyun</div>
+                        </div>
+                        <div className="p-4 bg-slate-800/50 rounded-2xl border border-white/5">
+                            <div className="text-2xl font-black text-white">{stats.testsCompleted}</div>
+                            <div className="text-xs text-slate-400 font-bold uppercase">Test</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* content grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                    {/* Radar Chart */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="glass p-8 rounded-3xl border border-white/5 flex flex-col items-center"
+                    >
+                        <h3 className="text-xl font-bold text-white mb-6">Gelişim Haritası</h3>
+                        <div className="w-full h-[300px] md:h-[400px]">
+                            <Radar data={radarChartData} options={radarOptions} />
+                        </div>
+                    </motion.div>
+
+                    <div className="space-y-8">
+                        {/* Recent Activity */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="glass p-8 rounded-3xl border border-white/5"
                         >
-                            Oturumu Kapat
-                        </button>
-                    </div>
-                </div>
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard
-                        title="Bireyselleşme Skoru"
-                        value={`%${stats.independenceScore}`}
-                        icon="🧬"
-                        color="text-purple-400"
-                        bg="bg-purple-900/20"
-                    />
-                    <StatCard
-                        title="Tamamlanan Testler"
-                        value={stats.completedTests}
-                        icon="📝"
-                        color="text-blue-400"
-                        bg="bg-blue-900/20"
-                    />
-                    <StatCard
-                        title="Çözülen Senaryolar"
-                        value={stats.completedScenarios}
-                        icon="🎬"
-                        color="text-emerald-400"
-                        bg="bg-emerald-900/20"
-                    />
-                    <StatCard
-                        title="Haftalık Seri"
-                        value={`${stats.weeklyStreak} Gün`}
-                        icon="🔥"
-                        color="text-orange-400"
-                        bg="bg-orange-900/20"
-                    />
-                </div>
-
-                {/* Content Tabs / Sections */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Detailed Progress - Real Chart */}
-                    <div className="lg:col-span-2 bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-xl">
-                        <h2 className="text-2xl font-bold text-white mb-6">Gelişim Grafiği</h2>
-                        <div className="h-64 w-full">
-                            {chartData.length > 0 ? (
-                                <Line
-                                    data={{
-                                        labels: chartData.map(d => d.date),
-                                        datasets: [
-                                            {
-                                                label: 'Bireyselleşme Puanı',
-                                                data: chartData.map(d => d.score),
-                                                borderColor: 'rgb(59, 130, 246)',
-                                                backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                                                tension: 0.3
-                                            }
-                                        ]
-                                    }}
-                                    options={{
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: {
-                                            legend: {
-                                                display: false
-                                            }
-                                        },
-                                        scales: {
-                                            y: {
-                                                beginAtZero: true,
-                                                max: 100,
-                                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                                                ticks: { color: '#94a3b8' }
-                                            },
-                                            x: {
-                                                grid: { display: false },
-                                                ticks: { color: '#94a3b8' }
-                                            }
-                                        }
-                                    }}
-                                />
-                            ) : (
-                                <div className="h-full flex flex-col items-center justify-center text-slate-500">
-                                    <p>Henüz yeterli veri yok.</p>
-                                    <span className="text-xs">Testleri çözdükçe burada gelişimini göreceksin.</span>
-                                </div>
-                            )}
-                        </div>
-                        <p className="mt-4 text-slate-400 text-sm">
-                            * Bu grafik 6 haftalık süreçteki duygusal ve sosyal gelişimini takip eder.
-                        </p>
-                    </div>
-
-                    {/* Recent Activity */}
-                    <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-xl">
-                        <h2 className="text-2xl font-bold text-white mb-6">Son Aktiviteler</h2>
-                        <ul className="space-y-4">
-                            {[1, 2, 3].map((i) => (
-                                <li key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors cursor-default">
-                                    <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xl">
-                                        🎯
+                            <h3 className="text-xl font-bold text-white mb-6">Son Aktiviteler</h3>
+                            <div className="space-y-4">
+                                {recentActivities.map((act: any, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border border-white/5">
+                                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                                        <p className="text-sm text-slate-300 flex-1">{act.action}</p>
+                                        <span className="text-xs text-slate-500">{new Date(act.timestamp).toLocaleDateString('tr-TR')}</span>
                                     </div>
-                                    <div>
-                                        <h4 className="font-bold text-white text-sm">Çarkıfelek Döndürüldü</h4>
-                                        <p className="text-xs text-slate-400">Bugün</p>
-                                    </div>
-                                </li>
-                            ))}
-                            <li className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors cursor-default">
-                                <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xl">
-                                    📝
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-white text-sm">Karakter Oluşturuldu</h4>
-                                    <p className="text-xs text-slate-400">Dün</p>
-                                </div>
-                            </li>
-                        </ul>
-                        <button className="w-full mt-6 py-3 text-sm font-bold text-slate-400 hover:text-white transition-colors border border-white/10 rounded-xl hover:bg-white/5">
-                            Tüm Geçmişi Gör
-                        </button>
+                                ))}
+                                {recentActivities.length === 0 && (
+                                    <p className="text-slate-500 text-sm text-center py-4">Henüz aktivite yok. Bir oyuna başla!</p>
+                                )}
+                            </div>
+                        </motion.div>
+
+                        {/* Achievements Placeholder */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="glass p-8 rounded-3xl border border-white/5"
+                        >
+                            <h3 className="text-xl font-bold text-white mb-6">Rozetler</h3>
+                            <div className="flex gap-4 flex-wrap">
+                                {stats.totalPoints > 100 && (
+                                    <div className="w-16 h-16 rounded-full bg-yellow-500/20 border border-yellow-500 text-2xl flex items-center justify-center tooltip" title="Başlangıç">🚀</div>
+                                )}
+                                {stats.gamesPlayed >= 5 && (
+                                    <div className="w-16 h-16 rounded-full bg-purple-500/20 border border-purple-500 text-2xl flex items-center justify-center tooltip" title="Oyun Ustası">🎮</div>
+                                )}
+                                {/* More dynamic badges based on radar stats */}
+                                {stats.radarData[0] > 70 && (
+                                    <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500 text-2xl flex items-center justify-center tooltip" title="Özgür Ruh">🌿</div>
+                                )}
+
+                                {stats.totalPoints < 50 && <p className="text-xs text-slate-500">Rozet kazanmak için puan topla.</p>}
+                            </div>
+                        </motion.div>
                     </div>
+
                 </div>
 
             </div>
         </div>
-    );
-}
-
-function StatCard({ title, value, icon, color, bg }: { title: string, value: string | number, icon: string, color: string, bg: string }) {
-    return (
-        <motion.div
-            whileHover={{ y: -5 }}
-            className={`p-6 rounded-2xl border border-white/5 shadow-lg ${bg} backdrop-blur-sm`}
-        >
-            <div className="flex justify-between items-start mb-4">
-                <span className="text-4xl">{icon}</span>
-                <span className={`text-3xl font-black ${color}`}>{value}</span>
-            </div>
-            <h3 className="text-slate-300 font-bold text-sm tracking-wide uppercase opacity-80">{title}</h3>
-        </motion.div>
     );
 }

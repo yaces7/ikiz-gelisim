@@ -1,8 +1,8 @@
 
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
 import dbConnect from '@/app/lib/dbConnect';
-import { User, Score, Interaction } from '@/app/lib/models/ResearchData';
+import { Score, Interaction } from '@/app/lib/models/ResearchData';
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -10,7 +10,6 @@ export async function GET(request: Request) {
     try {
         await dbConnect();
 
-        // 1. Auth Check
         const authHeader = request.headers.get('Authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,51 +23,77 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Invalid Token' }, { status: 401 });
         }
 
-        const userId = decoded.id; // Assuming payload has id
+        const userId = decoded.id;
 
-        // 2. Fetch Aggregated Data
+        // Fetch User Scores
+        const scores = await Score.find({ user_id: userId });
 
-        // a. Latest Independence Score
-        const latestScore = await Score.findOne({ user_id: userId, test_type: 'BSO' })
-            .sort({ timestamp: -1 });
+        // Calculate Totals / Radar Stats
+        // Default Stats
+        const radarStats = {
+            'Özerklik': 50,
+            'Sınırlar': 50,
+            'İletişim': 50,
+            'Özgüven': 50,
+            'Farkındalık': 50
+        };
 
-        const independenceScore = latestScore ? latestScore.total_score : 50; // Default start mid-point or 0
+        let totalPoints = 0;
+        let gamesPlayed = 0;
+        let testsCompleted = 0;
 
-        // b. Completed Tests Count
-        const completedTests = await Score.countDocuments({ user_id: userId });
+        scores.forEach(s => {
+            // Aggregate Points
+            totalPoints += s.total_score || 0;
 
-        // c. Completed Scenarios (Interactions type 'simulation')
-        const completedScenarios = await Interaction.countDocuments({ user_id: userId, action_type: 'simulation' });
+            if (s.test_type === 'GAME') {
+                gamesPlayed++;
+                // Map Games to Radar Dimensions
+                const gameId = s.sub_dimensions?.gameId;
+                const scoreVal = s.total_score || 50;
 
-        // d. Last Activity
-        const lastInteraction = await Interaction.findOne({ user_id: userId }).sort({ timestamp: -1 });
-        const lastActivityDate = lastInteraction ? new Date(lastInteraction.timestamp) : null;
+                if (gameId === 'boundary') radarStats['Sınırlar'] = (radarStats['Sınırlar'] + scoreVal) / 2;
+                if (gameId === 'mirror') radarStats['Farkındalık'] = (radarStats['Farkındalık'] + scoreVal) / 2;
+                if (gameId === 'diplomacy') radarStats['İletişim'] = (radarStats['İletişim'] + scoreVal) / 2;
+                if (gameId === 'social') radarStats['Özerklik'] = (radarStats['Özerklik'] + scoreVal) / 2;
+                if (gameId === 'future') radarStats['Özgüven'] = (radarStats['Özgüven'] + scoreVal) / 2;
+            }
+            else if (s.test_type === 'BSO') {
+                testsCompleted++;
+                // BSO General Impact
+                radarStats['Özerklik'] = (radarStats['Özerklik'] + (s.total_score || 50)) / 2;
+                radarStats['Farkındalık'] = (radarStats['Farkındalık'] + (s.total_score || 50)) / 2;
+            }
+        });
 
-        // e. Streak Calculation (Simplified: Count distinct days in last 7 days)
-        // For real app, use aggregation pipeline
-        const streak = lastActivityDate ? 1 : 0; // Placeholder logic for now
+        // Fetch Recent Activity
+        const interactions = await Interaction.find({ user_id: userId })
+            .sort({ timestamp: -1 })
+            .limit(5);
 
-        // f. Chart Data (Last 6 Scores)
-        const recentScores = await Score.find({ user_id: userId, test_type: 'BSO' })
-            .sort({ timestamp: 1 })
-            .limit(6);
-
-        const chartData = recentScores.map(s => ({
-            date: new Date(s.timestamp).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }),
-            score: s.total_score
+        const recentActivities = interactions.map(i => ({
+            action: i.content || 'Aktivite',
+            timestamp: i.timestamp
         }));
 
+        // Determine Level based on points
+        const level = Math.floor(totalPoints / 500) + 1;
+        const nextLevelProgress = (totalPoints % 500) / 5; // Percentage
+
         return NextResponse.json({
-            stats: {
-                independenceScore,
-                completedTests,
-                completedScenarios,
-                weeklyStreak: streak,
-                lastActivity: lastActivityDate
-                    ? lastActivityDate.toLocaleDateString('tr-TR', { hour: '2-digit', minute: '2-digit' })
-                    : 'Henüz aktivite yok',
+            user: {
+                level,
+                title: level > 5 ? 'Bireyselleşme Uzmanı' : (level > 2 ? 'Kâşif İkiz' : 'Çaylak'),
+                nextLevelProgress
             },
-            chartData
+            stats: {
+                totalPoints,
+                gamesPlayed,
+                testsCompleted,
+                radarData: Object.values(radarStats),
+                radarLabels: Object.keys(radarStats)
+            },
+            recentActivities
         });
 
     } catch (error) {

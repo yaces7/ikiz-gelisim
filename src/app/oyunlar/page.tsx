@@ -236,6 +236,32 @@ function SwipeGameRunner({ gameId, onClose }: { gameId: string, onClose: () => v
   const [finished, setFinished] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (finished) {
+      const saveGame = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            await fetch('/api/game/save', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                gameId,
+                score,
+                maxScore: scenarios.length * 20,
+                metadata: { completionRate: 1 }
+              })
+            });
+          }
+        } catch (e) { console.error("Game save failed", e); }
+      };
+      saveGame();
+    }
+  }, [finished, gameId, score, scenarios.length]);
+
   // Card Motion
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-30, 30]);
