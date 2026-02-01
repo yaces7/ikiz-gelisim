@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,45 +8,9 @@ import { io } from 'socket.io-client';
 import { encryptData } from '../lib/security';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
+import { scenarios } from '../data/scenarios';
 
-// Ensure socket connection exists or mock it prevents crash
-const socket = io();
-
-const scenarios = [
-    {
-        id: 1,
-        title: 'Hafta Sonu İkilemi',
-        stage: 'Senaryo 1 / 3',
-        description: 'Arkadaşlarınla uzun zamandır planladığın sinema etkinliği var. Tam çıkmak üzereyken ikizin "Kendimi çok yalnız hissediyorum, lütfen gitme" diyor.',
-        options: [
-            { id: 'a', text: 'Planımı iptal eder, onunla kalırım.', icon: '🫂', independenceEffect: -10, feedback: 'Fedakarca ama kendi sınırlarını ihlal ettin.' },
-            { id: 'b', text: '"Seni seviyorum ama bu plana sadık kalmalıyım" derim.', icon: '🛡️', independenceEffect: +15, feedback: 'Harika bir sınır koyma örneği!' },
-            { id: 'c', text: 'Arkadaşlarımı eve çağırırım.', icon: '🏠', independenceEffect: +5, feedback: 'Orta yol, ama bireysel alanını feda ettin.' }
-        ]
-    },
-    {
-        id: 2,
-        title: 'Kıyafet Seçimi',
-        stage: 'Senaryo 2 / 3',
-        description: 'Okulun ilk günü için kendine çok beğendiğin bir tarz oluşturdun. İkizin "İkimiz de aynı giyinsek çok havalı oluruz, lütfen!" diye ısrar ediyor.',
-        options: [
-            { id: 'a', text: 'Onu kırmamak için aynı giyinirim.', icon: '👕', independenceEffect: -15, feedback: 'Bireysel ifaden yerine uyumu seçtin.' },
-            { id: 'b', text: '"Bugün kendi tarzımı yansıtmak istiyorum." derim.', icon: '✨', independenceEffect: +20, feedback: 'Kendi kimliğini cesurca ifade ettin!' },
-            { id: 'c', text: 'Sadece bir aksesuarı ortak takmayı öneririm.', icon: '🤝', independenceEffect: +10, feedback: 'Hem bağınızı korudun hem de farlılığını.' }
-        ]
-    },
-    {
-        id: 3,
-        title: 'Farklı İlgi Alanları',
-        stage: 'Senaryo 3 / 3',
-        description: 'Sen basketbol kursuna yazılmak istiyorsun, ikizin ise tiyatroya. Ailen sadece bir kursa gidebileceğinizi ve ortak karar vermeniz gerektiğini söylüyor.',
-        options: [
-            { id: 'a', text: 'Onun istediği tiyatroya giderim.', icon: '🎭', independenceEffect: -20, feedback: 'Kendi tutkularını erteledin.' },
-            { id: 'b', text: 'Ailemle konuşup ayrı kurslar için ısrar ederim.', icon: '🗣️', independenceEffect: +25, feedback: 'Bireysel gelişim hakkını savundun.' },
-            { id: 'c', text: 'Sırayla denemeyi öneririm.', icon: '🔄', independenceEffect: +5, feedback: 'Adil bir çözüm aradın.' }
-        ]
-    }
-];
+let socket: any;
 
 export default function ChoiceEngine() {
     const { user } = useAuth();
@@ -62,31 +27,47 @@ export default function ChoiceEngine() {
     const activeScenario = scenarios[currentIndex];
 
     useEffect(() => {
-        setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+        if (typeof window !== 'undefined') {
+            setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+        }
+        socket = io();
+        return () => { if (socket) socket.disconnect(); }
     }, []);
 
     // Typewriter Effect
     useEffect(() => {
-        if (!showResult && !completed && textIndex < activeScenario.description.length) {
+        if (!showResult && !completed && activeScenario && textIndex < activeScenario.description.length) {
             const timeout = setTimeout(() => {
                 setTextIndex(prev => prev + 1);
-            }, 30);
+            }, 20); // Faster typing
             return () => clearTimeout(timeout);
         }
     }, [textIndex, showResult, activeScenario, completed]);
 
-    const handleChoice = (option: any) => {
-        if (!user) return; // Should be blocked by overlay, but safety check
+    const handleChoice = async (option: any) => {
+        if (!user) return;
 
         setFocusMode(true);
-        // Mock socket emit or real one
-        const encryptedPayload = encryptData({
-            choiceId: option.id,
-            timestamp: Date.now(),
-            scoreDelta: option.independenceEffect,
-            userId: user.id
-        });
-        if (socket) socket.emit('child_action', { encryptedData: encryptedPayload });
+
+        // Save to Database (Simulation Interaction)
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                await fetch('/api/game/save', { // Re-using game save endpoint for simplicity
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        gameId: 'simulation_choice',
+                        score: option.independenceEffect,
+                        maxScore: 30, // Max delta
+                        metadata: { scenarioId: activeScenario.id, choiceId: option.id }
+                    })
+                });
+            }
+        } catch (e) { console.error("Sim Save Error", e); }
 
         setTimeout(() => {
             setLastChoice(option);
@@ -98,7 +79,7 @@ export default function ChoiceEngine() {
             setShowResult(true);
             setFocusMode(false);
             setTextIndex(0);
-        }, 1000);
+        }, 800);
     };
 
     const nextScenario = () => {
@@ -114,17 +95,12 @@ export default function ChoiceEngine() {
         }
     };
 
-    // --- RENDER LOGIC ---
-
     if (!user) {
-        // Not Logged In View
         return (
             <div className="relative w-full max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-2xl h-[400px] flex items-center justify-center bg-slate-900 border border-white/10">
                 <div className="text-center p-8 space-y-4">
                     <div className="inline-block p-4 bg-yellow-500/10 rounded-full mb-2">
-                        <svg className="w-10 h-10 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
+                        <span className="text-4xl">🔐</span>
                     </div>
                     <h3 className="text-2xl font-bold text-white">Giriş Yapmalısınız</h3>
                     <p className="text-slate-400 max-w-sm mx-auto">
@@ -143,7 +119,7 @@ export default function ChoiceEngine() {
             <div className="relative w-full max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-slate-900 border border-emerald-500/30 p-12 text-center animate-in zoom-in duration-500">
                 <ReactConfetti width={windowSize.width} height={windowSize.height} numberOfPieces={200} recycle={false} />
                 <h2 className="text-4xl font-black text-white mb-4">Tebrikler! 🎉</h2>
-                <p className="text-xl text-slate-300 mb-8">Tüm senaryoları tamamladın.</p>
+                <p className="text-xl text-slate-300 mb-8">Tüm simülasyon senaryolarını tamamladın.</p>
                 <div className="text-6xl font-black text-blue-400 mb-4">{independenceScore}</div>
                 <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8">BİREYSELLEŞME SKORU</p>
                 <button
@@ -180,7 +156,7 @@ export default function ChoiceEngine() {
                     <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
                         <span className="text-sm font-bold tracking-widest text-blue-400 uppercase">{activeScenario.stage}</span>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-400">Mevcut Skor:</span>
+                            <span className="text-xs text-gray-400">Skor:</span>
                             <span className={`font-mono font-bold ${independenceScore > 50 ? 'text-green-400' : 'text-orange-400'}`}>{independenceScore}</span>
                         </div>
                     </div>
@@ -220,12 +196,6 @@ export default function ChoiceEngine() {
                                                 <h4 className="text-lg font-bold text-white group-hover:text-blue-300 transition-colors">
                                                     {opt.text}
                                                 </h4>
-                                                <span className="text-xs text-gray-400 group-hover:text-blue-200/70">Seçmek için tıkla</span>
-                                            </div>
-                                            <div className="absolute right-6 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-                                                <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                </svg>
                                             </div>
                                         </motion.button>
                                     ))}
@@ -245,7 +215,7 @@ export default function ChoiceEngine() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h3 className="text-2xl font-bold text-white">Seçimin Analiz Edildi</h3>
+                                    <h3 className="text-2xl font-bold text-white">Analiz Sonucu</h3>
                                     <p className="text-lg text-gray-300">"{lastChoice.feedback}"</p>
                                 </div>
 
@@ -256,16 +226,11 @@ export default function ChoiceEngine() {
                                     </div>
                                     <div className="w-full h-4 bg-gray-700 rounded-full overflow-hidden relative">
                                         <motion.div
-                                            initial={{ width: `${independenceScore - lastChoice.independenceEffect}%` }}
-                                            animate={{ width: `${independenceScore}%` }}
+                                            initial={{ width: `${Math.max(0, Math.min(100, independenceScore - lastChoice.independenceEffect))}%` }}
+                                            animate={{ width: `${Math.max(0, Math.min(100, independenceScore))}%` }}
                                             transition={{ type: "spring", stiffness: 50, damping: 10 }}
                                             className="h-full absolute top-0 left-0 bg-gradient-to-r from-blue-500 to-indigo-600"
                                         />
-                                    </div>
-                                    <div className="flex justify-between mt-2 text-xs text-gray-500">
-                                        <span>Bağımlı</span>
-                                        <span>Dengeli</span>
-                                        <span>Özerk</span>
                                     </div>
                                 </div>
 
