@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import dbConnect from '@/app/lib/dbConnect';
-import { Score, Interaction } from '@/app/lib/models/ResearchData';
+import { User, Score, Interaction } from '@/app/lib/models/ResearchData';
 import jwt from 'jsonwebtoken';
 
 export const dynamic = 'force-dynamic';
@@ -12,36 +12,26 @@ export async function POST(request: Request) {
     try {
         await dbConnect();
 
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const { gameId, score, maxScore, metadata } = await request.json();
 
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) return NextResponse.json({ error: 'Auth required' }, { status: 401 });
         const token = authHeader.split(' ')[1];
-        let decoded: any;
-        try {
-            decoded = jwt.verify(token, JWT_SECRET);
-        } catch (err) {
-            return NextResponse.json({ error: 'Invalid Token' }, { status: 401 });
-        }
+        const decoded: any = jwt.verify(token, JWT_SECRET);
 
         const userId = decoded.id;
-        const body = await request.json();
-        const { gameId, score, maxScore, metadata } = body;
 
-        // Model Fix: Check if test_type supports 'GAME' enum. Let's force it if strict schema fails.
-        // Assuming loose schema or 'test_type' is String.
-
-        await Score.create({
+        // 1. Save Score
+        const savedScore = await Score.create({
             user_id: userId,
             test_type: 'GAME',
-            scale_period: 'process', // Ongoing
-            week_number: 0,
+            scale_period: 'process',
             total_score: score || 0,
             sub_dimensions: { gameId, rawScore: score, ...metadata },
             timestamp: new Date()
         });
 
+        // 2. Save Interaction Log
         await Interaction.create({
             user_id: userId,
             action_type: 'game_played',
@@ -50,10 +40,15 @@ export async function POST(request: Request) {
             timestamp: new Date()
         });
 
-        return NextResponse.json({ success: true });
+        // 3. Update User XP
+        await User.findByIdAndUpdate(userId, {
+            $inc: { total_points: score || 0 }
+        });
+
+        return NextResponse.json({ success: true, score: savedScore });
 
     } catch (error) {
-        console.error('Game Save Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error("Game Save Error", error);
+        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
     }
 }
