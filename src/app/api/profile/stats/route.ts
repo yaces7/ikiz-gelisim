@@ -1,16 +1,14 @@
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import dbConnect from '@/app/lib/dbConnect';
 import { User, Score, Interaction } from '@/app/lib/models/ResearchData';
 import jwt from 'jsonwebtoken';
 
-// CRITICAL: Force dynamic rendering
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
     try {
         // --- 1. Auth Check ---
         const authHeader = request.headers.get('Authorization');
@@ -29,35 +27,42 @@ export async function GET(request: NextRequest) {
         const userId = decoded.id;
 
         // --- 2. Database Connection ---
-        const db = await dbConnect();
+        await dbConnect();
 
-        // Default values (will be used if DB fails or no data)
+        // Fetch user data
         let userData = {
             username: decoded.username || 'Kullanıcı',
             level: 1,
-            total_points: 0,
-            twin_id: null
+            total_points: 0
         };
-        let scores: any[] = [];
-        let interactions: any[] = [];
 
-        // Try to fetch from DB if connected
-        if (db) {
-            try {
-                const user = await User.findById(userId).lean();
-                if (user) {
-                    userData = {
-                        username: user.username || decoded.username,
-                        level: user.level || 1,
-                        total_points: user.total_points || 0,
-                        twin_id: user.twin_id || null
-                    };
-                }
-                scores = await Score.find({ user_id: userId }).lean() || [];
-                interactions = await Interaction.find({ user_id: userId }).sort({ timestamp: -1 }).limit(10).lean() || [];
-            } catch (dbErr) {
-                console.error('DB Query Error:', dbErr);
+        try {
+            const user = await User.findById(userId);
+            if (user) {
+                userData = {
+                    username: user.username || decoded.username,
+                    level: user.level || 1,
+                    total_points: user.total_points || 0
+                };
             }
+        } catch (e) {
+            console.error('User fetch error:', e);
+        }
+
+        // Fetch scores
+        let scores: any[] = [];
+        try {
+            scores = await Score.find({ user_id: userId }) || [];
+        } catch (e) {
+            console.error('Scores fetch error:', e);
+        }
+
+        // Fetch interactions
+        let interactions: any[] = [];
+        try {
+            interactions = await Interaction.find({ user_id: userId }).sort({ timestamp: -1 }).limit(10) || [];
+        } catch (e) {
+            console.error('Interactions fetch error:', e);
         }
 
         // --- 3. Calculate Stats ---
@@ -118,9 +123,6 @@ export async function GET(request: NextRequest) {
 
     } catch (error: any) {
         console.error('Profile Stats Error:', error);
-        return NextResponse.json({
-            error: 'Server Error',
-            message: error.message
-        }, { status: 500 });
+        return NextResponse.json({ error: 'Server Error', message: error.message }, { status: 500 });
     }
 }
