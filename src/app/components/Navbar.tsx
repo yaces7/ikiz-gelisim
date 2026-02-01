@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 
+import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
@@ -23,6 +24,7 @@ const NavbarContent = () => {
   const router = useRouter();
   const [activeRoute, setActiveRoute] = useState('konular');
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const currentPath = pathname.replace('/', '');
@@ -89,25 +91,52 @@ const NavbarContent = () => {
           </div>
           <div className="flex items-center space-x-3 ml-4">
 
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Link href="/profil">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-slate-800 text-white border border-slate-700 hover:bg-slate-700 transition"
+                  >
+                    <span className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-xs">
+                      {user.fullName?.[0]?.toUpperCase() || 'U'}
+                    </span>
+                    Profilim
+                  </motion.button>
+                </Link>
+                <motion.button
+                  onClick={logout}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 rounded-lg text-sm font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition"
+                >
+                  Çıkış
+                </motion.button>
+              </div>
+            ) : (
+              <>
+                <Link href="/giris">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded-lg text-sm font-bold bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 transition"
+                  >
+                    Giriş
+                  </motion.button>
+                </Link>
+                <Link href="/kayit">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white shadow-md hover:bg-blue-700 transition"
+                  >
+                    Kayıt
+                  </motion.button>
+                </Link>
+              </>
+            )}
 
-            <Link href="/giris">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-lg text-sm font-bold bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 transition"
-              >
-                Giriş
-              </motion.button>
-            </Link>
-            <Link href="/kayit">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white shadow-md hover:bg-blue-700 transition"
-              >
-                Kayıt
-              </motion.button>
-            </Link>
           </div>
         </div>
       </div>
