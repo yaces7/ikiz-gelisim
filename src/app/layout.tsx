@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: "İkiz ergenlerin ayrışma-bütünleşme süreci, bireyselleşme ve kimlik gelişimlerini desteklemeye yönelik platform",
 };
 
+
+import { Providers } from "./providers";
+
 export default function RootLayout({
   children,
 }: {
@@ -17,9 +20,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <body className={`${inter.className} min-h-screen bg-gradient-to-br from-green-400 via-purple-500 to-purple-800`}>
-        <Navbar />
-        {children}
+      <body className={inter.className}>
+        <Providers>
+          <Navbar />
+          {children}
+        </Providers>
       </body>
     </html>
   );

@@ -1,168 +1,192 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { parentSurvey } from './surveyData';
+import { Line } from 'react-chartjs-2';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../context/AuthContext';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
 
-const infoCards = [
-  {
-    title: 'Kimlik Gelişimi',
-    description: 'İkizlerin bireysel kimlik gelişimi ve özgün kişilik oluşturma süreçleri hakkında bilgiler.',
-    image: '/images/identity.jpg',
-    icon: '👥'
-  },
-  {
-    title: 'Sosyal İlişkiler',
-    description: 'İkizlerin sosyal becerilerini geliştirme ve bağımsız ilişkiler kurma stratejileri.',
-    image: '/images/social.jpg',
-    icon: '🤝'
-  },
-  {
-    title: 'Akademik Başarı',
-    description: 'İkizlerin akademik gelişimlerini destekleme ve bireysel potansiyellerini ortaya çıkarma yöntemleri.',
-    image: '/images/academic.jpg',
-    icon: '📚'
-  }
-];
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-export default function EbeveynPage() {
-  const [showSurvey, setShowSurvey] = useState(false);
-  const [answers, setAnswers] = useState<string[]>([]);
-  const [showResult, setShowResult] = useState(false);
+export default function ParentDashboard() {
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<any>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowResult(true);
-  };
-
-  const calculateResult = () => {
-    const positiveAnswers = answers.filter(
-      answer => answer === 'Katılıyorum' || answer === 'Kesinlikle Katılıyorum'
-    ).length;
-
-    if (positiveAnswers <= 5) return 'low';
-    if (positiveAnswers <= 10) return 'medium';
-    return 'high';
-  };
-
-  const getResultMessage = () => {
-    const result = calculateResult();
-    switch (result) {
-      case 'low':
-        return 'İkizlerinizin bireyselleşme sürecini destekleme konusunda daha fazla bilgi edinmeniz faydalı olabilir. Önerilen kaynakları inceleyebilir ve uzman desteği alabilirsiniz.';
-      case 'medium':
-        return 'İkizlerinizin bireyselleşme sürecini destekleme konusunda iyi bir yoldasınız. Bazı alanlarda gelişim fırsatları mevcut. Önerilen stratejileri uygulayarak daha iyi sonuçlar elde edebilirsiniz.';
-      case 'high':
-        return 'İkizlerinizin bireyselleşme sürecini destekleme konusunda çok iyi bir yaklaşımınız var. Bu olumlu tutumu sürdürmeye devam edin ve diğer ebeveynlerle deneyimlerinizi paylaşın.';
-      default:
-        return '';
+  useEffect(() => {
+    // Auth Protection
+    if (!isAuthenticated) {
+      router.push('/giris');
+      return;
     }
+    if (user?.role !== 'parent' && user?.role !== 'admin') {
+      router.push('/'); // Redirect twins back home
+      return;
+    }
+
+    // Fetch Real Data
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/parent/dashboard', {
+          method: 'POST',
+          body: JSON.stringify({ userId: user?.id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setDashboardData(data.data);
+        }
+      } catch (error) {
+        console.error("Dashboard fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user, isAuthenticated, router]);
+
+  if (loading) {
+    return <div className="min-h-screen pt-32 text-center text-white">Veriler Yükleniyor...</div>;
+  }
+
+  // Fallback/Default Data if API returns empty
+  const labels = dashboardData?.chartLabels || ['1. Hafta', '2. Hafta', '3. Hafta'];
+  const data = {
+    labels,
+    datasets: dashboardData?.datasets || [
+      {
+        label: 'Veri Bekleniyor',
+        data: [0, 0, 0],
+        borderColor: 'rgb(156, 163, 175)',
+        backgroundColor: 'rgba(156, 163, 175, 0.5)',
+      }
+    ]
   };
 
-  if (showResult) {
-    return (
-      <div className="min-h-screen p-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-xl p-8">
-          <h2 className="text-2xl font-bold mb-6">Değerlendirme Sonucu</h2>
-          <p className="text-lg mb-6">{getResultMessage()}</p>
-          <button
-            onClick={() => {
-              setShowSurvey(false);
-              setShowResult(false);
-              setAnswers([]);
-            }}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200"
-          >
-            Ana Sayfaya Dön
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (showSurvey) {
-    return (
-      <div className="min-h-screen p-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-xl p-8">
-          <h2 className="text-2xl font-bold mb-6">Ebeveyn Değerlendirme Formu</h2>
-          <form onSubmit={handleSubmit}>
-            {parentSurvey.map((soru, index) => (
-              <div key={soru.id} className="mb-6">
-                <p className="text-lg mb-3">{soru.question}</p>
-                <div className="space-y-2">
-                  {soru.options.map((option, optionIndex) => (
-                    <label key={optionIndex} className="flex items-center space-x-3">
-                      <input
-                        type="radio"
-                        name={`soru-${soru.id}`}
-                        value={option}
-                        onChange={(e) => {
-                          const newAnswers = [...answers];
-                          newAnswers[index] = e.target.value;
-                          setAnswers(newAnswers);
-                        }}
-                        required
-                        className="form-radio"
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))}
-            <button
-              type="submit"
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200"
-            >
-              Değerlendir
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' as const },
+      title: { display: true, text: 'Çocuklarınızın Haftalık Gelişim Eğrisi' },
+    },
+    scales: { y: { min: 0, max: 100 } }
+  };
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Ebeveyn Bilgilendirme</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {infoCards.map((card, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-lg shadow-lg overflow-hidden"
-            >
-              <div className="relative h-48">
-                <Image
-                  src={card.image}
-                  alt={card.title}
-                  layout="fill"
-                  objectFit="cover"
-                />
-              </div>
-              <div className="p-6">
-                <div className="text-4xl mb-4">{card.icon}</div>
-                <h3 className="text-xl font-bold mb-2">{card.title}</h3>
-                <p className="text-gray-600">{card.description}</p>
-              </div>
-            </motion.div>
-          ))}
+    <div className="min-h-screen pt-24 px-4 pb-12 bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Ebeveyn Kontrol Paneli</h1>
+            <p className="text-gray-500">Çocuklarınızın gelişim sürecini buradan takip edin.</p>
+          </div>
+          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 text-sm font-medium transition dark:bg-gray-800 dark:border-gray-700">
+            Rapor İndir (PDF)
+          </button>
         </div>
 
-        <div className="text-center">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowSurvey(true)}
-            className="bg-purple-600 text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-purple-700 transition-colors duration-200"
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="glass p-6 rounded-xl border-t-4 border-green-500"
           >
-            Değerlendirme Formunu Doldur
-          </motion.button>
+            <h3 className="text-gray-500 text-sm font-medium">Genel İlerleme</h3>
+            <p className="text-3xl font-bold mt-2 text-gray-800 dark:text-white">
+              {dashboardData?.averageProgress ? `%${dashboardData.averageProgress}` : '-'}
+            </p>
+            <div className="w-full bg-gray-200 h-1.5 rounded-full mt-4">
+              <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${dashboardData?.averageProgress || 0}%` }}></div>
+            </div>
+          </motion.div>
+
+          {/* ... Other stats could be dynamic too but keeping static structure for now ... */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="glass p-6 rounded-xl border-t-4 border-blue-500"
+          >
+            <h3 className="text-gray-500 text-sm font-medium">Tamamlanan Aktiviteler</h3>
+            <p className="text-3xl font-bold mt-2 text-gray-800 dark:text-white">
+              {dashboardData?.totalActivities || 0}
+            </p>
+            <p className="text-xs text-green-500 mt-2">Aktif katılım</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="glass p-6 rounded-xl border-t-4 border-purple-500"
+          >
+            <h3 className="text-gray-500 text-sm font-medium">Sistem Rehberliği</h3>
+            <p className="text-lg font-bold mt-2 text-gray-800 dark:text-white">
+              {dashboardData?.guidanceMode || "Veri Bekleniyor"}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">Dinamik öneri modu</p>
+          </motion.div>
+        </div>
+
+        {/* Main Chart */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <motion.div
+            className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Line options={options} data={data} />
+          </motion.div>
+
+          {/* AI Insights Sidebar - Dynamic */}
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-2xl text-white shadow-lg">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-2xl">💡</span>
+                <h3 className="font-bold text-lg">AI Mikro-Rehberlik</h3>
+              </div>
+              <p className="text-indigo-100 text-sm leading-relaxed mb-4">
+                {dashboardData?.aiInsight || "Çocuklarınızın aktiviteleri tamamlandıkça burada size özel yapay zeka önerileri belirecektir."}
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
+              <h3 className="font-bold text-gray-800 dark:text-gray-200 mb-4">Son Aktiviteler</h3>
+              <ul className="space-y-4">
+                {dashboardData?.recentActivities?.map((act: any, idx: number) => (
+                  <li key={idx} className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                    <span className={`w-2 h-2 rounded-full ${act.type === 'journal' ? 'bg-blue-500' : 'bg-green-500'}`}></span>
+                    {act.description}
+                    <span className="ml-auto text-xs text-gray-400">{new Date(act.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </li>
+                )) || <li className="text-sm text-gray-500">Henüz aktivite yok.</li>}
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-} 
+}

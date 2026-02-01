@@ -3,19 +3,109 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #ffffff;
+  --background-start: #0f172a;
+  /* Slate 900 */
+  --background-end: #3b0764;
+  /* Purple 950 */
+  --primary: #3b82f6;
+  /* Blue for Individual */
+  --secondary: #60a5fa;
+  --accent: #8b5cf6;
+  --card-bg: rgba(30, 41, 59, 0.7);
+  /* Darker glass */
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='bond'] {
+  --primary: #f97316;
+  /* Orange for Bond */
+  --secondary: #fb923c;
+  --accent: #ec4899;
+  --background-start: #fff7ed;
+  --background-end: #ffedd5;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
     --foreground: #ededed;
+    --background-start: #0f172a;
+    --background-end: #1e293b;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+  }
+
+  [data-theme='bond'] {
+    --background-start: #2a1b15;
+    --background-end: #431407;
   }
 }
 
+
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: #ffffff !important;
+  /* Force White Text */
+  background: linear-gradient(135deg, #020617 0%, #0f172a 40%, #2e1065 100%) !important;
+  /* Dark Slate to Deep Purple */
+  background-attachment: fixed !important;
+  /* Fix background during scroll */
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  /* Improve text readability */
+}
+
+/* Enhancing visibility for texts on glass backgrounds */
+.glass {
+  color: #1a202c;
+  /* Default dark for light mode glass */
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass {
+    color: #f7fafc;
+    /* White for dark mode glass */
+  }
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+/* Animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

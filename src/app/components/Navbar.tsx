@@ -3,7 +3,11 @@
 import React, { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
+
+
+import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
   return (
@@ -18,6 +22,7 @@ const NavbarContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeRoute, setActiveRoute] = useState('konular');
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const currentPath = pathname.replace('/', '');
@@ -59,145 +64,56 @@ const NavbarContent = () => {
 
   const getButtonClass = (route: string) => {
     const isActive = activeRoute === route;
-    return `px-6 py-2 rounded-lg text-base font-medium transition-all duration-300 ${
-      isActive
-        ? 'bg-black text-white'
-        : 'bg-black text-white hover:bg-gray-800'
-    }`;
+    return `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap ${isActive
+      ? 'bg-blue-600 text-white shadow-lg'
+      : 'text-gray-700 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-700'
+      }`;
   };
 
   return (
-    <nav className="bg-gradient-to-r from-purple-100 to-indigo-100 shadow-lg sticky top-0 z-50">
+    <nav className="sticky top-0 z-50 glass border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
-          <div className="flex items-center justify-start space-x-4 flex-1">
-            <div className="min-w-[120px]">
+          <div className="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+            {['konular', 'carkifelek', 'testler', 'etkinlikler', 'oyunlar', 'karakter-oyunu', 'ebeveyn'].map((route) => (
               <motion.button
-                onClick={() => handleNavigation('konular')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
+                key={route}
+                onClick={() => handleNavigation(route)}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={getButtonClass('konular')}
+                className={getButtonClass(route)}
               >
-                <span className="relative z-10">Konular</span>
+                {route.charAt(0).toUpperCase() + route.slice(1).replace('-', ' ')}
               </motion.button>
-            </div>
-            <div className="min-w-[120px]">
-              <motion.button
-                onClick={() => handleNavigation('carkifelek')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.95 }}
-                className={getButtonClass('carkifelek')}
-              >
-                <span className="relative z-10">Çarkıfelek</span>
-              </motion.button>
-            </div>
-            <div className="min-w-[120px]">
-              <motion.button
-                onClick={() => handleNavigation('testler')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.95 }}
-                className={getButtonClass('testler')}
-              >
-                <span className="relative z-10">Testler</span>
-              </motion.button>
-            </div>
-            <div className="min-w-[120px]">
-              <motion.button
-                onClick={() => handleNavigation('etkinlikler')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.95 }}
-                className={getButtonClass('etkinlikler')}
-              >
-                <span className="relative z-10">Etkinlikler</span>
-              </motion.button>
-            </div>
-            <div className="min-w-[120px]">
-              <motion.button
-                onClick={() => handleNavigation('oyunlar')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.95 }}
-                className={getButtonClass('oyunlar')}
-              >
-                <span className="relative z-10">Oyunlar</span>
-              </motion.button>
-            </div>
-            <div className="min-w-[120px]">
-              <motion.button
-                onClick={() => handleNavigation('karakter-oyunu')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.95 }}
-                className={getButtonClass('karakter-oyunu')}
-              >
-                <span className="relative z-10">Karakter Oyunu</span>
-              </motion.button>
-            </div>
-            <div className="min-w-[120px]">
-              <motion.button
-                onClick={() => handleNavigation('ebeveyn')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.95 }}
-                className={getButtonClass('ebeveyn')}
-              >
-                <span className="relative z-10">Ebeveyn</span>
-              </motion.button>
-            </div>
+            ))}
           </div>
-          <div className="flex items-center space-x-3">
-            <div>
+          <div className="flex items-center space-x-3 ml-4">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:scale-110 transition-transform"
+              title={theme === 'individual' ? 'Bağ Moduna Geç' : 'Birey Moduna Geç'}
+            >
+              {theme === 'individual' ? '🔵' : '🟠'}
+            </button>
+
+            <Link href="/giris">
               <motion.button
-                onClick={() => handleNavigation('giris')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-6 py-3 rounded-lg text-base font-bold transition-all duration-300 ${
-                  activeRoute === 'giris'
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
-                    : 'bg-white text-purple-600 border-2 border-purple-600 hover:bg-purple-50'
-                }`}
+                className="px-4 py-2 rounded-lg text-sm font-bold bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 transition"
               >
                 Giriş
               </motion.button>
-            </div>
-            <div>
+            </Link>
+            <Link href="/kayit">
               <motion.button
-                onClick={() => handleNavigation('kayit')}
-                whileHover={{ 
-                  scale: 1.05,
-                  transition: { duration: 0.2 }
-                }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-6 py-3 rounded-lg text-base font-bold transition-all duration-300 ${
-                  activeRoute === 'kayit'
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
-                    : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md hover:shadow-lg'
-                }`}
+                className="px-4 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white shadow-md hover:bg-blue-700 transition"
               >
                 Kayıt
               </motion.button>
-            </div>
+            </Link>
           </div>
         </div>
       </div>

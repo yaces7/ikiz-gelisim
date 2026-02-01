@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'standalone',
+  swcMinify: true,
   images: {
     domains: ['localhost', 'ikiz-gelisim.vercel.app'],
   },
