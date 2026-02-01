@@ -45,44 +45,72 @@ export default function InsightDashboard() {
         ],
     };
 
+    // Custom hook to detect dark mode for chart config
+    const isDarkMode = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : true;
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    const textColor = isDarkMode ? '#e2e8f0' : '#1e293b';
+
     const options = {
         scales: {
             r: {
-                angleLines: {
-                    color: 'rgba(255, 255, 255, 0.2)', // White transparent
-                },
-                grid: {
-                    color: 'rgba(255, 255, 255, 0.2)',
-                },
+                angleLines: { color: gridColor },
+                grid: { color: gridColor },
                 pointLabels: {
-                    font: {
-                        size: 14,
-                        family: 'Inter',
-                    },
-                    color: '#ffffff', // White labels
+                    font: { size: 12, family: 'Inter', weight: 'bold' },
+                    color: textColor,
                 },
                 ticks: {
                     backdropColor: 'transparent',
-                    color: '#ffffff',
-                    display: false // Hide numbers on axis for cleaner look
+                    display: false
                 }
             }
         },
         plugins: {
             legend: {
-                position: 'top' as const,
-                labels: {
-                    color: 'rgba(128, 128, 128, 0.8)'
-                }
+                position: 'bottom' as const,
+                labels: { color: textColor, font: { family: 'Inter' } }
             }
-        }
+        },
+        maintainAspectRatio: false
     };
 
     return (
-        <div className="w-full max-w-lg mx-auto p-6 bg-white/10 glass rounded-2xl mt-8">
-            <h2 className="text-2xl font-bold mb-4 text-center">Gelişim Radarı (Insight Dashboard)</h2>
-            <div className="relative h-80 w-full">
-                <Radar data={data} options={options} />
+        <div className="w-full max-w-lg mx-auto rounded-3xl overflow-hidden shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] transition-all duration-500">
+            {/* Background Overlay */}
+            <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl z-0"></div>
+
+            <div className="relative z-10 p-8">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-black text-gray-800 dark:text-gray-100">
+                        Gelişim Radarı
+                    </h2>
+                    <span className="px-3 py-1 text-xs font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300 rounded-full">
+                        Haftalık Analiz
+                    </span>
+                </div>
+
+                <div className="relative h-72 w-full mb-8">
+                    <Radar data={data} options={options as any} />
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-800/80 p-5 rounded-2xl border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-start gap-4">
+                        <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-xl">
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-800 dark:text-white mb-1">Gelişim Fırsatı</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                "Risk Alma" puanın hedefin biraz altında. Yeni bir hobi denemek özgüvenini artırabilir.
+                            </p>
+                            <button className="text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 flex items-center gap-1 transition-colors">
+                                Önerilen Aktiviteyi Gör ➜
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
