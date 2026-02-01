@@ -4,6 +4,8 @@ import dbConnect from '@/app/lib/dbConnect';
 import { Score, Interaction } from '@/app/lib/models/ResearchData';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic'; // CRITICAL FIX for 404s
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function GET(request: Request) {
@@ -25,12 +27,11 @@ export async function GET(request: Request) {
 
         const userId = decoded.id;
 
-        // Fetch User Scores
+        // Fetch Data
         const scores = await Score.find({ user_id: userId });
 
         // Calculate Totals / Radar Stats
-        // Default Stats
-        const radarStats = {
+        const radarStats: Record<string, number> = {
             'Özerklik': 50,
             'Sınırlar': 50,
             'İletişim': 50,
@@ -43,27 +44,26 @@ export async function GET(request: Request) {
         let testsCompleted = 0;
 
         scores.forEach(s => {
-            // Aggregate Points
             totalPoints += s.total_score || 0;
 
             if (s.test_type === 'GAME') {
                 gamesPlayed++;
-                // Map Games to Radar Dimensions
-                const gameId = s.sub_dimensions?.gameId;
-                const scoreVal = s.total_score || 50;
-
-                if (gameId === 'boundary') radarStats['Sınırlar'] = (radarStats['Sınırlar'] + scoreVal) / 2;
-                if (gameId === 'mirror') radarStats['Farkındalık'] = (radarStats['Farkındalık'] + scoreVal) / 2;
-                if (gameId === 'diplomacy') radarStats['İletişim'] = (radarStats['İletişim'] + scoreVal) / 2;
-                if (gameId === 'social') radarStats['Özerklik'] = (radarStats['Özerklik'] + scoreVal) / 2;
-                if (gameId === 'future') radarStats['Özgüven'] = (radarStats['Özgüven'] + scoreVal) / 2;
+                // Add simple logic to boost stats based on game type
+                const gid = s.sub_dimensions?.gameId;
+                if (gid === 'boundary') radarStats['Sınırlar'] += 5;
+                if (gid === 'diplomacy') radarStats['İletişim'] += 5;
+                if (gid === 'mirror') radarStats['Farkındalık'] += 5;
+                if (gid === 'social') radarStats['Özerklik'] += 5;
             }
             else if (s.test_type === 'BSO') {
                 testsCompleted++;
-                // BSO General Impact
                 radarStats['Özerklik'] = (radarStats['Özerklik'] + (s.total_score || 50)) / 2;
-                radarStats['Farkındalık'] = (radarStats['Farkındalık'] + (s.total_score || 50)) / 2;
             }
+        });
+
+        // Normalize Stats to 100
+        Object.keys(radarStats).forEach(k => {
+            radarStats[k] = Math.min(100, Math.max(0, radarStats[k]));
         });
 
         // Fetch Recent Activity
@@ -76,15 +76,16 @@ export async function GET(request: Request) {
             timestamp: i.timestamp
         }));
 
-        // Determine Level based on points
+        // Level Calculation
         const level = Math.floor(totalPoints / 500) + 1;
-        const nextLevelProgress = (totalPoints % 500) / 5; // Percentage
+        const nextLevelProgress = (totalPoints % 500) / 5;
 
         return NextResponse.json({
             user: {
                 level,
-                title: level > 5 ? 'Bireyselleşme Uzmanı' : (level > 2 ? 'Kâşif İkiz' : 'Çaylak'),
-                nextLevelProgress
+                title: level > 5 ? 'Uzman' : 'Kâşif',
+                nextLevelProgress,
+                twinName: 'İkizim (Bağlanmadı)' // Placeholder for now
             },
             stats: {
                 totalPoints,

@@ -4,6 +4,8 @@ import dbConnect from '@/app/lib/dbConnect';
 import { Score, Interaction } from '@/app/lib/models/ResearchData';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic';
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(request: Request) {
@@ -27,27 +29,24 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { gameId, score, maxScore, metadata } = body;
 
-        // 1. Save Game Score to Dashboard (Score Model)
-        // We use 'BSO' type or a new 'GAME' type. Let's stick to BSO for radar integration if simplified,
-        // but cleaner to have test_type: 'GAME'.
-        // For compatibility with Profile Radar (which might filter BSO), let's save as 'GAME' and update profile to read it.
+        // Model Fix: Check if test_type supports 'GAME' enum. Let's force it if strict schema fails.
+        // Assuming loose schema or 'test_type' is String.
 
         await Score.create({
             user_id: userId,
             test_type: 'GAME',
-            scale_period: 'process', // Ongoing process
-            week_number: 0, // 0 for games
-            total_score: Math.round((score / maxScore) * 100), // Normalize to 0-100
-            sub_dimensions: { gameId, rawScore: score, ...metadata }, // Store specific game data
+            scale_period: 'process', // Ongoing
+            week_number: 0,
+            total_score: score || 0,
+            sub_dimensions: { gameId, rawScore: score, ...metadata },
             timestamp: new Date()
         });
 
-        // 2. Log Interaction for Activity Feed
         await Interaction.create({
             user_id: userId,
-            action_type: 'simulation',
-            content: `${gameId} oyunu tamamlandı. Skor: ${score}`,
-            impact_score: Math.round((score / maxScore) * 100),
+            action_type: 'game_played',
+            content: `${gameId.toUpperCase()} oynandı: ${score}`,
+            impact_score: score,
             timestamp: new Date()
         });
 

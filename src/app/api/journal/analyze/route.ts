@@ -5,8 +5,10 @@ import { Interaction } from '@/app/lib/models/ResearchData';
 import { Groq } from 'groq-sdk';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic';
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY }); // Ensure env is loaded
 
 export async function POST(request: Request) {
     try {
@@ -25,6 +27,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid Token' }, { status: 401 });
         }
 
+        const userId = decoded.id;
         const body = await request.json();
         const { entry, mood } = body;
 
@@ -32,60 +35,33 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Entry is required' }, { status: 400 });
         }
 
-        // AI Analysis with Groq
         let analysisResult = {
             sentiment: 50,
             me_ratio: 0.5,
             we_ratio: 0.5,
-            analysis_note: "Analiz servisi şu an meşgul."
+            analysis_note: "AI servisi şu an meşgul."
         };
 
         try {
-            const prompt = `
-            Sen bir ikiz psikolojisi uzmanısın. Aşağıdaki günlük yazısını analiz et.
-            Yazı: "${entry}"
-            
-            Lütfen şu formatta JSON döndür:
-            {
-                "sentiment": (0-100 arası duygu puanı, 100 çok pozitif),
-                "me_ratio": (0.0-1.0 arası "ben" dili kullanımı),
-                "we_ratio": (0.0-1.0 arası "biz" dili kullanımı),
-                "analysis_note": (Tek cümlelik Türkçe özet yorum, ikiz bireyselleşmesi açısından)
+            if (process.env.GROQ_API_KEY) {
+                const prompt = `Analiz et: "${entry}" -> JSON: {sentiment(0-100), me_ratio(0-1), we_ratio(0-1), analysis_note(string)}`;
+                const completion = await groq.chat.completions.create({
+                    messages: [{ role: 'user', content: prompt }],
+                    model: 'llama3-8b-8192',
+                    response_format: { type: 'json_object' }
+                });
+                const content = completion.choices[0]?.message?.content;
+                if (content) analysisResult = JSON.parse(content);
             }
-            Sadece JSON.
-            `;
+        } catch (e) { console.error("AI Error", e); }
 
-            const completion = await groq.chat.completions.create({
-                messages: [{ role: 'user', content: prompt }],
-                model: 'llama3-8b-8192',
-                response_format: { type: 'json_object' }
-            });
-
-            const content = completion.choices[0]?.message?.content;
-            if (content) {
-                analysisResult = JSON.parse(content);
-            }
-        } catch (aiError) {
-            console.error('Groq Analysis Error:', aiError);
-            // Fallback mock analysis if API fails
-            analysisResult = {
-                sentiment: mood === 'happy' ? 80 : (mood === 'sad' ? 30 : 50),
-                me_ratio: 0.5,
-                we_ratio: 0.5,
-                analysis_note: "Yazınız kaydedildi."
-            };
-        }
-
-        // Save Interaction
         await Interaction.create({
-            user_id: decoded.id,
+            user_id: userId,
             action_type: 'journal_entry',
-            content: entry.substring(0, 100) + '...', // Preview
-            impact_score: analysisResult.sentiment, // Use sentiment as score for now
+            content: `Günlük: ${entry.substring(0, 50)}...`,
+            impact_score: analysisResult.sentiment,
             timestamp: new Date()
         });
-
-        // We could also save the full journal in a Journal model if requested, but Interaction works for feed.
 
         return NextResponse.json({
             success: true,

@@ -4,6 +4,8 @@ import dbConnect from '@/app/lib/dbConnect';
 import { Interaction } from '@/app/lib/models/ResearchData';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic';
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(request: Request) {
@@ -27,13 +29,13 @@ export async function POST(request: Request) {
 
         await Interaction.create({
             user_id: decoded.id,
-            action_type: 'spin_task',
-            content: `Çarkıfelek Görevi Tamamlandı: ${task}`,
+            action_type: 'task_complete',
+            content: `Görev Tamamlandı: ${task}`,
             impact_score: score || 0,
             timestamp: new Date()
         });
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, message: `Completed ${task}` });
 
     } catch (error) {
         console.error('Task Complete Error:', error);

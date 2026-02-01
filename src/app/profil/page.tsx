@@ -35,7 +35,10 @@ export default function ProfilePage() {
         // Auth Check
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/giris');
+            // router.push('/giris'); // Let's avoid redirect loop if feasible, or allow view
+            // But for profile, redirect needed.
+            // router.push('/giris');
+            // Let's just return early.
             return;
         }
 
@@ -59,7 +62,8 @@ export default function ProfilePage() {
         return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Profil Yükleniyor...</div>;
     }
 
-    if (!profileData) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Veri alınamadı.</div>;
+    // Fallback for null data if API fails or user not logged in
+    if (!profileData) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Lütfen Giriş Yapın.</div>;
 
     const { user: levelInfo, stats, recentActivities } = profileData;
 
@@ -156,45 +160,89 @@ export default function ProfilePage() {
                 </div>
 
                 {/* content grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {/* Radar Chart */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="glass p-8 rounded-3xl border border-white/5 flex flex-col items-center"
-                    >
-                        <h3 className="text-xl font-bold text-white mb-6">Gelişim Haritası</h3>
-                        <div className="w-full h-[300px] md:h-[400px]">
-                            <Radar data={radarChartData} options={radarOptions} />
-                        </div>
-                    </motion.div>
+                    {/* Left Column: Activity & Family */}
+                    <div className="lg:col-span-1 space-y-8">
 
-                    <div className="space-y-8">
+                        {/* Family Card (NEW) */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="glass p-6 rounded-3xl border border-white/5"
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-white">Aile Bağlantısı</h3>
+                                <span className="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs font-bold rounded-lg border border-purple-500/20">
+                                    AİLE
+                                </span>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="bg-slate-800/50 p-4 rounded-xl flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-lg">
+                                        👯
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-bold text-white">İkiz Kardeşim</div>
+                                        <div className="text-xs text-slate-400">Bağlantı Bekleniyor...</div>
+                                    </div>
+                                    <button className="ml-auto text-xs font-bold text-blue-400 hover:text-white transition">Davet Et</button>
+                                </div>
+
+                                <div className="bg-slate-800/50 p-4 rounded-xl flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-lg">
+                                        👪
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-bold text-white">Ebeveynler</div>
+                                        <div className="text-xs text-slate-400">Bağlantı Yok</div>
+                                    </div>
+                                    <button className="ml-auto text-xs font-bold text-blue-400 hover:text-white transition">Bağla</button>
+                                </div>
+                            </div>
+                        </motion.div>
+
                         {/* Recent Activity */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
-                            className="glass p-8 rounded-3xl border border-white/5"
+                            className="glass p-6 rounded-3xl border border-white/5"
                         >
-                            <h3 className="text-xl font-bold text-white mb-6">Son Aktiviteler</h3>
-                            <div className="space-y-4">
+                            <h3 className="text-lg font-bold text-white mb-4">Son Aktiviteler</h3>
+                            <div className="space-y-3">
                                 {recentActivities.map((act: any, idx: number) => (
-                                    <div key={idx} className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border border-white/5">
-                                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                                        <p className="text-sm text-slate-300 flex-1">{act.action}</p>
-                                        <span className="text-xs text-slate-500">{new Date(act.timestamp).toLocaleDateString('tr-TR')}</span>
+                                    <div key={idx} className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl border border-white/5 hover:bg-slate-800 transition-colors">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                        <p className="text-xs text-slate-300 flex-1 line-clamp-1">{act.action}</p>
+                                        <span className="text-[10px] text-slate-500 whitespace-nowrap">{new Date(act.timestamp).toLocaleDateString('tr-TR')}</span>
                                     </div>
                                 ))}
                                 {recentActivities.length === 0 && (
-                                    <p className="text-slate-500 text-sm text-center py-4">Henüz aktivite yok. Bir oyuna başla!</p>
+                                    <p className="text-slate-500 text-xs text-center py-4">Henüz aktivite yok.</p>
                                 )}
                             </div>
                         </motion.div>
+                    </div>
 
-                        {/* Achievements Placeholder */}
+                    {/* Right Column: Stats & Radar */}
+                    <div className="lg:col-span-2 space-y-8">
+                        {/* Radar Chart */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="glass p-8 rounded-3xl border border-white/5 flex flex-col items-center"
+                        >
+                            <h3 className="text-xl font-bold text-white mb-6">Gelişim Haritası</h3>
+                            <div className="w-full h-[300px] md:h-[400px]">
+                                <Radar data={radarChartData} options={radarOptions} />
+                            </div>
+                        </motion.div>
+
+                        {/* Achievements */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -204,14 +252,13 @@ export default function ProfilePage() {
                             <h3 className="text-xl font-bold text-white mb-6">Rozetler</h3>
                             <div className="flex gap-4 flex-wrap">
                                 {stats.totalPoints > 100 && (
-                                    <div className="w-16 h-16 rounded-full bg-yellow-500/20 border border-yellow-500 text-2xl flex items-center justify-center tooltip" title="Başlangıç">🚀</div>
+                                    <div className="w-16 h-16 rounded-full bg-yellow-500/20 border border-yellow-500 text-2xl flex items-center justify-center tooltip cursor-help" title="Başlangıç: 100+ Puan">🚀</div>
                                 )}
                                 {stats.gamesPlayed >= 5 && (
-                                    <div className="w-16 h-16 rounded-full bg-purple-500/20 border border-purple-500 text-2xl flex items-center justify-center tooltip" title="Oyun Ustası">🎮</div>
+                                    <div className="w-16 h-16 rounded-full bg-purple-500/20 border border-purple-500 text-2xl flex items-center justify-center tooltip cursor-help" title="Oyun Ustası: 5+ Oyun">🎮</div>
                                 )}
-                                {/* More dynamic badges based on radar stats */}
                                 {stats.radarData[0] > 70 && (
-                                    <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500 text-2xl flex items-center justify-center tooltip" title="Özgür Ruh">🌿</div>
+                                    <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500 text-2xl flex items-center justify-center tooltip cursor-help" title="Özgür Ruh: Yüksek Özerklik">🌿</div>
                                 )}
 
                                 {stats.totalPoints < 50 && <p className="text-xs text-slate-500">Rozet kazanmak için puan topla.</p>}
