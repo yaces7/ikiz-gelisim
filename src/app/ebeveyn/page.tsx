@@ -1,3 +1,4 @@
+
 'use client';
 
 import { motion } from 'framer-motion';
@@ -31,44 +32,69 @@ export default function ParentDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Auth Protection
-    if (!isAuthenticated) {
-      router.push('/giris');
-      return;
-    }
-    if (user?.role !== 'parent' && user?.role !== 'admin') {
-      router.push('/'); // Redirect twins back home
-      return;
-    }
-
-    // Fetch Real Data
     const fetchData = async () => {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        router.push('/giris');
+        return;
+      }
+
       try {
         const res = await fetch('/api/parent/dashboard', {
-          method: 'POST',
-          body: JSON.stringify({ userId: user?.id })
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
         });
+
         const data = await res.json();
+
         if (data.success) {
           setDashboardData(data.data);
+        } else {
+          setError(data.error || 'Veri alınamadı');
         }
-      } catch (error) {
-        console.error("Dashboard fetch error:", error);
+      } catch (err: any) {
+        console.error("Dashboard fetch error:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [user, isAuthenticated, router]);
+  }, [router]);
 
   if (loading) {
-    return <div className="min-h-screen pt-32 text-center text-white">Veriler Yükleniyor...</div>;
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-white text-xl animate-pulse">Veriler Yükleniyor...</div>
+      </div>
+    );
   }
 
-  // Fallback/Default Data if API returns empty
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <div className="bg-red-500/10 border border-red-500/50 p-6 rounded-2xl max-w-md text-center">
+          <h2 className="text-xl font-bold text-red-400 mb-2">Hata</h2>
+          <p className="text-slate-300 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-slate-800 rounded-lg text-white font-bold"
+          >
+            Tekrar Dene
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const labels = dashboardData?.chartLabels || ['1. Hafta', '2. Hafta', '3. Hafta'];
   const data = {
     labels,
@@ -85,21 +111,24 @@ export default function ParentDashboard() {
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' as const },
-      title: { display: true, text: 'Çocuklarınızın Haftalık Gelişim Eğrisi' },
+      legend: { position: 'top' as const, labels: { color: '#94a3b8' } },
+      title: { display: true, text: 'Çocuklarınızın Haftalık Gelişim Eğrisi', color: '#e2e8f0' },
     },
-    scales: { y: { min: 0, max: 100 } }
+    scales: {
+      y: { min: 0, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+      x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148, 163, 184, 0.1)' } }
+    }
   };
 
   return (
-    <div className="min-h-screen pt-24 px-4 pb-12 bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-950 pt-24 px-4 pb-12">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Ebeveyn Kontrol Paneli</h1>
-            <p className="text-gray-500">Çocuklarınızın gelişim sürecini buradan takip edin.</p>
+            <h1 className="text-3xl font-bold text-white">Ebeveyn Kontrol Paneli</h1>
+            <p className="text-slate-400">Çocuklarınızın gelişim sürecini buradan takip edin.</p>
           </div>
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 text-sm font-medium transition dark:bg-gray-800 dark:border-gray-700">
+          <button className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg shadow-sm hover:bg-slate-700 text-sm font-medium transition text-white">
             Rapor İndir (PDF)
           </button>
         </div>
@@ -110,49 +139,48 @@ export default function ParentDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="glass p-6 rounded-xl border-t-4 border-green-500"
+            className="bg-slate-900 border border-white/10 p-6 rounded-xl border-t-4 border-t-green-500"
           >
-            <h3 className="text-gray-500 text-sm font-medium">Genel İlerleme</h3>
-            <p className="text-3xl font-bold mt-2 text-gray-800 dark:text-white">
-              {dashboardData?.averageProgress ? `%${dashboardData.averageProgress}` : '-'}
+            <h3 className="text-slate-400 text-sm font-medium">Genel İlerleme</h3>
+            <p className="text-3xl font-bold mt-2 text-white">
+              {dashboardData?.averageProgress ? `%${dashboardData.averageProgress}` : '%0'}
             </p>
-            <div className="w-full bg-gray-200 h-1.5 rounded-full mt-4">
-              <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${dashboardData?.averageProgress || 0}%` }}></div>
+            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-4">
+              <div className="bg-green-500 h-1.5 rounded-full transition-all" style={{ width: `${dashboardData?.averageProgress || 0}%` }}></div>
             </div>
           </motion.div>
 
-          {/* ... Other stats could be dynamic too but keeping static structure for now ... */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="glass p-6 rounded-xl border-t-4 border-blue-500"
+            className="bg-slate-900 border border-white/10 p-6 rounded-xl border-t-4 border-t-blue-500"
           >
-            <h3 className="text-gray-500 text-sm font-medium">Tamamlanan Aktiviteler</h3>
-            <p className="text-3xl font-bold mt-2 text-gray-800 dark:text-white">
+            <h3 className="text-slate-400 text-sm font-medium">Tamamlanan Aktiviteler</h3>
+            <p className="text-3xl font-bold mt-2 text-white">
               {dashboardData?.totalActivities || 0}
             </p>
-            <p className="text-xs text-green-500 mt-2">Aktif katılım</p>
+            <p className="text-xs text-green-400 mt-2">Aktif katılım</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="glass p-6 rounded-xl border-t-4 border-purple-500"
+            className="bg-slate-900 border border-white/10 p-6 rounded-xl border-t-4 border-t-purple-500"
           >
-            <h3 className="text-gray-500 text-sm font-medium">Sistem Rehberliği</h3>
-            <p className="text-lg font-bold mt-2 text-gray-800 dark:text-white">
+            <h3 className="text-slate-400 text-sm font-medium">Sistem Rehberliği</h3>
+            <p className="text-lg font-bold mt-2 text-white">
               {dashboardData?.guidanceMode || "Veri Bekleniyor"}
             </p>
-            <p className="text-xs text-gray-400 mt-2">Dinamik öneri modu</p>
+            <p className="text-xs text-slate-500 mt-2">Dinamik öneri modu</p>
           </motion.div>
         </div>
 
         {/* Main Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <motion.div
-            className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm"
+            className="lg:col-span-2 bg-slate-900 border border-white/10 p-6 rounded-2xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
@@ -160,9 +188,8 @@ export default function ParentDashboard() {
             <Line options={options} data={data} />
           </motion.div>
 
-          {/* AI Insights Sidebar - Dynamic */}
           <div className="space-y-6">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-2xl text-white shadow-lg">
+            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-2xl text-white shadow-lg">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl">💡</span>
                 <h3 className="font-bold text-lg">AI Mikro-Rehberlik</h3>
@@ -172,16 +199,22 @@ export default function ParentDashboard() {
               </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
-              <h3 className="font-bold text-gray-800 dark:text-gray-200 mb-4">Son Aktiviteler</h3>
+            <div className="bg-slate-900 border border-white/10 p-6 rounded-2xl">
+              <h3 className="font-bold text-white mb-4">Son Aktiviteler</h3>
               <ul className="space-y-4">
-                {dashboardData?.recentActivities?.map((act: any, idx: number) => (
-                  <li key={idx} className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                    <span className={`w-2 h-2 rounded-full ${act.type === 'journal' ? 'bg-blue-500' : 'bg-green-500'}`}></span>
-                    {act.description}
-                    <span className="ml-auto text-xs text-gray-400">{new Date(act.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
-                  </li>
-                )) || <li className="text-sm text-gray-500">Henüz aktivite yok.</li>}
+                {dashboardData?.recentActivities?.length > 0 ? (
+                  dashboardData.recentActivities.map((act: any, idx: number) => (
+                    <li key={idx} className="flex items-center gap-3 text-sm text-slate-400">
+                      <span className={`w-2 h-2 rounded-full ${act.type === 'journal' ? 'bg-blue-500' : 'bg-green-500'}`}></span>
+                      <span className="flex-1 truncate">{act.description}</span>
+                      <span className="text-xs text-slate-500">
+                        {new Date(act.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-sm text-slate-500">Henüz aktivite yok.</li>
+                )}
               </ul>
             </div>
           </div>
