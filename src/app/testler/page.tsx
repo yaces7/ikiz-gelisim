@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
@@ -185,6 +184,32 @@ function TestInterface() {
   const [showResult, setShowResult] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [answers, setAnswers] = useState<{ qId: number, score: number }[]>([]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!user) return;
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/test/history', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCompletedWeeks(data.completedWeeks);
+          // Also restore scores map if needed
+          const scoreMap: Record<string, number> = {};
+          data.history.forEach((h: any) => {
+            scoreMap[h.weekId] = h.score;
+          });
+          setScores(scoreMap);
+        }
+      } catch (e) {
+        console.error("Failed to load test history", e);
+      }
+    };
+    fetchHistory();
+  }, [user]);
 
   const handleStartWeek = (weekId: number) => {
     if (!user) return;

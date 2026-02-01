@@ -24,6 +24,7 @@ const ScoreSchema = new Schema({
     user_id: { type: Schema.Types.ObjectId, ref: 'User' },
     test_type: { type: String, enum: ['BSO', 'ATE'] },
     scale_period: { type: String, enum: ['pre', 'post', 'follow-up'], default: 'pre' },
+    week_number: Number,
     total_score: Number,
     sub_dimensions: Object, // JSON of sub-scores
     timestamp: { type: Date, default: Date.now }
