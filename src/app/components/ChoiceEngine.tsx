@@ -5,26 +5,53 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactConfetti from 'react-confetti';
 import { io } from 'socket.io-client';
 import { encryptData } from '../lib/security';
+import { useAuth } from '../context/AuthContext';
+import Link from 'next/link';
 
-const socket = io(); // Connects to the same host/port automatically
+// Ensure socket connection exists or mock it prevents crash
+const socket = io();
 
 const scenarios = [
     {
         id: 1,
         title: 'Hafta Sonu İkilemi',
-        stage: 'Senaryo 1 / 5',
+        stage: 'Senaryo 1 / 3',
         description: 'Arkadaşlarınla uzun zamandır planladığın sinema etkinliği var. Tam çıkmak üzereyken ikizin "Kendimi çok yalnız hissediyorum, lütfen gitme" diyor.',
         options: [
             { id: 'a', text: 'Planımı iptal eder, onunla kalırım.', icon: '🫂', independenceEffect: -10, feedback: 'Fedakarca ama kendi sınırlarını ihlal ettin.' },
             { id: 'b', text: '"Seni seviyorum ama bu plana sadık kalmalıyım" derim.', icon: '🛡️', independenceEffect: +15, feedback: 'Harika bir sınır koyma örneği!' },
             { id: 'c', text: 'Arkadaşlarımı eve çağırırım.', icon: '🏠', independenceEffect: +5, feedback: 'Orta yol, ama bireysel alanını feda ettin.' }
         ]
+    },
+    {
+        id: 2,
+        title: 'Kıyafet Seçimi',
+        stage: 'Senaryo 2 / 3',
+        description: 'Okulun ilk günü için kendine çok beğendiğin bir tarz oluşturdun. İkizin "İkimiz de aynı giyinsek çok havalı oluruz, lütfen!" diye ısrar ediyor.',
+        options: [
+            { id: 'a', text: 'Onu kırmamak için aynı giyinirim.', icon: '👕', independenceEffect: -15, feedback: 'Bireysel ifaden yerine uyumu seçtin.' },
+            { id: 'b', text: '"Bugün kendi tarzımı yansıtmak istiyorum." derim.', icon: '✨', independenceEffect: +20, feedback: 'Kendi kimliğini cesurca ifade ettin!' },
+            { id: 'c', text: 'Sadece bir aksesuarı ortak takmayı öneririm.', icon: '🤝', independenceEffect: +10, feedback: 'Hem bağınızı korudun hem de farlılığını.' }
+        ]
+    },
+    {
+        id: 3,
+        title: 'Farklı İlgi Alanları',
+        stage: 'Senaryo 3 / 3',
+        description: 'Sen basketbol kursuna yazılmak istiyorsun, ikizin ise tiyatroya. Ailen sadece bir kursa gidebileceğinizi ve ortak karar vermeniz gerektiğini söylüyor.',
+        options: [
+            { id: 'a', text: 'Onun istediği tiyatroya giderim.', icon: '🎭', independenceEffect: -20, feedback: 'Kendi tutkularını erteledin.' },
+            { id: 'b', text: 'Ailemle konuşup ayrı kurslar için ısrar ederim.', icon: '🗣️', independenceEffect: +25, feedback: 'Bireysel gelişim hakkını savundun.' },
+            { id: 'c', text: 'Sırayla denemeyi öneririm.', icon: '🔄', independenceEffect: +5, feedback: 'Adil bir çözüm aradın.' }
+        ]
     }
 ];
 
 export default function ChoiceEngine() {
-    const [activeScenario, setActiveScenario] = useState(scenarios[0]);
+    const { user } = useAuth();
+    const [currentIndex, setCurrentIndex] = useState(0);
     const [showResult, setShowResult] = useState(false);
+    const [completed, setCompleted] = useState(false);
     const [independenceScore, setIndependenceScore] = useState(50);
     const [lastChoice, setLastChoice] = useState<any>(null);
     const [focusMode, setFocusMode] = useState(false);
@@ -32,28 +59,34 @@ export default function ChoiceEngine() {
     const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
     const [textIndex, setTextIndex] = useState(0);
 
+    const activeScenario = scenarios[currentIndex];
+
     useEffect(() => {
         setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     }, []);
 
     // Typewriter Effect
     useEffect(() => {
-        if (!showResult && textIndex < activeScenario.description.length) {
+        if (!showResult && !completed && textIndex < activeScenario.description.length) {
             const timeout = setTimeout(() => {
                 setTextIndex(prev => prev + 1);
             }, 30);
             return () => clearTimeout(timeout);
         }
-    }, [textIndex, showResult, activeScenario.description]);
+    }, [textIndex, showResult, activeScenario, completed]);
 
     const handleChoice = (option: any) => {
+        if (!user) return; // Should be blocked by overlay, but safety check
+
         setFocusMode(true);
+        // Mock socket emit or real one
         const encryptedPayload = encryptData({
             choiceId: option.id,
             timestamp: Date.now(),
-            scoreDelta: option.independenceEffect
+            scoreDelta: option.independenceEffect,
+            userId: user.id
         });
-        socket.emit('child_action', { encryptedData: encryptedPayload });
+        if (socket) socket.emit('child_action', { encryptedData: encryptedPayload });
 
         setTimeout(() => {
             setLastChoice(option);
@@ -64,16 +97,64 @@ export default function ChoiceEngine() {
 
             setShowResult(true);
             setFocusMode(false);
-            setTextIndex(0); // Reset for next time
-        }, 1200);
+            setTextIndex(0);
+        }, 1000);
     };
 
-    const reset = () => {
+    const nextScenario = () => {
         setShowResult(false);
         setLastChoice(null);
         setLeveledUp(false);
         setTextIndex(0);
+
+        if (currentIndex < scenarios.length - 1) {
+            setCurrentIndex(prev => prev + 1);
+        } else {
+            setCompleted(true);
+        }
     };
+
+    // --- RENDER LOGIC ---
+
+    if (!user) {
+        // Not Logged In View
+        return (
+            <div className="relative w-full max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-2xl h-[400px] flex items-center justify-center bg-slate-900 border border-white/10">
+                <div className="text-center p-8 space-y-4">
+                    <div className="inline-block p-4 bg-yellow-500/10 rounded-full mb-2">
+                        <svg className="w-10 h-10 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white">Giriş Yapmalısınız</h3>
+                    <p className="text-slate-400 max-w-sm mx-auto">
+                        Simülasyonları kullanmak ve ilerlemenizi kaydetmek için lütfen giriş yapın.
+                    </p>
+                    <Link href="/giris" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-500 transition-colors">
+                        Giriş Yap
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    if (completed) {
+        return (
+            <div className="relative w-full max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-slate-900 border border-emerald-500/30 p-12 text-center animate-in zoom-in duration-500">
+                <ReactConfetti width={windowSize.width} height={windowSize.height} numberOfPieces={200} recycle={false} />
+                <h2 className="text-4xl font-black text-white mb-4">Tebrikler! 🎉</h2>
+                <p className="text-xl text-slate-300 mb-8">Tüm senaryoları tamamladın.</p>
+                <div className="text-6xl font-black text-blue-400 mb-4">{independenceScore}</div>
+                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8">BİREYSELLEŞME SKORU</p>
+                <button
+                    onClick={() => { setCurrentIndex(0); setCompleted(false); setIndependenceScore(50); }}
+                    className="px-8 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                >
+                    Tekrar Oyna
+                </button>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -104,7 +185,7 @@ export default function ChoiceEngine() {
                         </div>
                     </div>
 
-                    <h2 className="text-3xl font-black mb-6 text-white leading-tight">
+                    <h2 className="text-3xl font-black mb-6 text-white leading-tight min-h-[4rem]">
                         {activeScenario.title}
                     </h2>
 
@@ -189,7 +270,7 @@ export default function ChoiceEngine() {
                                 </div>
 
                                 <button
-                                    onClick={reset}
+                                    onClick={nextScenario}
                                     className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-xl hover:bg-gray-100"
                                 >
                                     Sonraki Senaryo

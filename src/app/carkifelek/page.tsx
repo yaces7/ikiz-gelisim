@@ -1,155 +1,221 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import Link from 'next/link';
+import Confetti from 'react-confetti';
 
 const activities = [
-  { name: 'Bireysel Zaman', color: '#FF6B6B', icon: '👤' },
-  { name: 'Sosyal İlişkiler', color: '#4ECDC4', icon: '👥' },
-  { name: 'Duygusal Gelişim', color: '#45B7D1', icon: '❤️' },
-  { name: 'Akademik Gelişim', color: '#96CEB4', icon: '📚' },
-  { name: 'Özgüven', color: '#FFEEAD', icon: '🌟' },
-  { name: 'İletişim', color: '#FFD93D', icon: '💭' },
-  { name: 'Bağımsızlık', color: '#6C5B7B', icon: '🦋' },
-  { name: 'Kimlik Gelişimi', color: '#F7A072', icon: '🎭' }
+  { name: 'Bireysel Zaman', color: '#6366f1', icon: '🧘', desc: 'Kendinle baş başa kal. Kitap oku, müzik dinle veya sadece dinlen.' },
+  { name: 'Sosyal Bağ', color: '#ec4899', icon: '👥', desc: 'Bir arkadaşını ara veya ailenle kaliteli zaman geçir.' },
+  { name: 'Duygu Analizi', color: '#8b5cf6', icon: '📝', desc: 'Bugün hissettiklerini bir günlüğe yaz. Duygularını tanı.' },
+  { name: 'Akademik Odak', color: '#10b981', icon: '📚', desc: 'Derslerine veya yeni bir beceri öğrenmeye 30 dakika ayır.' },
+  { name: 'Özgüven', color: '#f59e0b', icon: '🦁', desc: 'Başardığın 3 şeyi listele ve kendine teşekkür et.' },
+  { name: 'Açık İletişim', color: '#3b82f6', icon: '💬', desc: 'Birine söylemekte zorlandığın bir şeyi nazikçe ifade et.' },
+  { name: 'Sorumluluk', color: '#14b8a6', icon: '✨', desc: 'Odanı topla veya ertelediğin bir görevi tamamla.' },
+  { name: 'Keşif', color: '#f43f5e', icon: '🔭', desc: 'Daha önce gitmediğin bir yere git veya yeni bir müzik türü dene.' }
 ];
 
 export default function WheelPage() {
   return (
-    <Suspense fallback={<div>Yükleniyor...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Yükleniyor...</div>}>
       <WheelContent />
     </Suspense>
   );
 }
 
 function WheelContent() {
+  const { user } = useAuth();
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const spinWheel = () => {
-    if (!spinning) {
-      setSpinning(true);
-      const newRotation = rotation + 1800 + Math.random() * 360;
-      setRotation(newRotation);
+    if (spinning) return;
 
-      setTimeout(() => {
-        setSpinning(false);
-        const selectedIndex = Math.floor((360 - (newRotation % 360)) / (360 / activities.length));
-        setSelectedActivity(activities[selectedIndex]);
-      }, 3000);
-    }
-  };
+    // Reset state
+    setSelectedActivity(null);
+    setShowConfetti(false);
+    setSpinning(true);
 
-  const getActivityDescription = (activityName: string) => {
-    const descriptions: { [key: string]: string } = {
-      'Bireysel Zaman': 'Kendinize özel zaman ayırın. Kendi ilgi alanlarınızı keşfedin ve bireysel aktivitelerle vakit geçirin.',
-      'Sosyal İlişkiler': 'Arkadaşlarınızla vakit geçirin, yeni insanlarla tanışın ve sosyal becerilerinizi geliştirin.',
-      'Duygusal Gelişim': 'Duygularınızı tanıyın, ifade edin ve başkalarının duygularını anlamaya çalışın.',
-      'Akademik Gelişim': 'Kendi öğrenme stilinizi keşfedin ve akademik hedeflerinize odaklanın.',
-      'Özgüven': 'Kendinize güvenin, yeteneklerinizi keşfedin ve başarılarınızla gurur duyun.',
-      'İletişim': 'Düşüncelerinizi açıkça ifade edin ve başkalarıyla etkili iletişim kurun.',
-      'Bağımsızlık': 'Kendi kararlarınızı alın ve sorumluluklarınızı üstlenin.',
-      'Kimlik Gelişimi': 'Kendi kimliğinizi keşfedin, ilgi alanlarınızı ve değerlerinizi belirleyin.'
-    };
-    return descriptions[activityName] || '';
+    // Calculate random rotation (min 5 spins + random segment)
+    const randomOffset = Math.random() * 360;
+    const newRotation = rotation + 1800 + randomOffset;
+    setRotation(newRotation);
+
+    setTimeout(() => {
+      setSpinning(false);
+      const normalizedRotation = newRotation % 360;
+      const segmentSize = 360 / activities.length;
+      // Because the arrow is at top (-90deg visually or 0deg in CSS flow), we calculate index backwards
+      // Adjusted for the top arrow:
+      const index = Math.floor((360 - (normalizedRotation % 360)) / segmentSize) % activities.length;
+
+      setSelectedActivity(activities[index]);
+      setShowConfetti(true);
+    }, 4000); // 4 seconds spin time matching transition
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-yellow-500 to-gray-900 py-12">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Aktivite Çarkı</h1>
-          <p className="text-xl text-gray-200">Bugün hangi aktiviteyi yapacağını öğrenmek için çarkı çevir!</p>
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30 overflow-hidden relative">
+      {/* Background Ambience */}
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-slate-950 pointer-events-none" />
+
+      {showConfetti && <Confetti numberOfPieces={200} recycle={false} colors={['#6366f1', '#ec4899', '#10b981']} />}
+
+      <div className="relative z-10 container mx-auto px-4 py-20 flex flex-col items-center justify-center min-h-screen">
+
+        {/* Header */}
+        <div className="text-center mb-12 space-y-4">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            Günlük Odak Çarkı
+          </h1>
+          <p className="text-slate-400 text-lg max-w-xl mx-auto">
+            Bugünün gelişim hedefini belirlemek için çarkı çevir. <br />
+            {!user && <span className="text-yellow-500/80 text-sm">(Sonuçları kaydetmek için giriş yapmalısın)</span>}
+          </p>
         </div>
 
-        <div className="flex flex-col items-center space-y-8">
-          <div className="relative">
-            {/* Siyah ok işareti */}
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-4xl text-black">▼</div>
-            
-            {/* Çark */}
-            <motion.div
-              animate={{ rotate: rotation }}
-              transition={{ duration: 3, ease: "easeOut" }}
-              className="w-[400px] h-[400px] rounded-full border-8 border-white relative overflow-hidden shadow-xl"
-              style={{
-                background: `conic-gradient(
-                  ${activities.map((activity, index) => 
-                    `${activity.color} ${(index * 360) / activities.length}deg ${((index + 1) * 360) / activities.length}deg`
-                  ).join(', ')}
-                )`
-              }}
-            >
-              {/* Merkez nokta */}
-              <div className="absolute inset-[40%] bg-white rounded-full shadow-inner flex items-center justify-center">
-                <div className="text-2xl">🎯</div>
+        {/* Main Interaction Area */}
+        <div className="relative flex flex-col items-center gap-10">
+
+          {/* Wheel Wrapper */}
+          <div className="relative group">
+            {/* Indicator / Stopper */}
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
+              <div className="w-12 h-12 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.5)] flex items-center justify-center border-4 border-slate-900">
+                <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[16px] border-t-blue-600 translate-y-1" />
               </div>
+            </div>
 
-              {/* Aktivite isimleri */}
-              {activities.map((activity, index) => {
-                const angle = (360 / activities.length) * index + (360 / activities.length / 2);
-                return (
-                  <div
-                    key={index}
-                    className="absolute w-full h-full flex items-start justify-center"
-                    style={{
-                      transform: `rotate(${angle}deg)`,
-                      transformOrigin: 'center',
-                    }}
-                  >
-                    <div 
-                      className="mt-8 text-white font-bold text-sm flex flex-col items-center"
-                      style={{ transform: `rotate(-${angle}deg)` }}
+            {/* The Wheel */}
+            <div className="relative p-2 rounded-full bg-slate-800/50 backdrop-blur-sm border border-white/10 shadow-2xl">
+              <motion.div
+                animate={{ rotate: rotation }}
+                transition={{ duration: 4, ease: [0.15, 0, 0.2, 1] }} // Bezier for realistic slow down
+                className="w-[320px] h-[320px] md:w-[450px] md:h-[450px] rounded-full relative overflow-hidden"
+                style={{
+                  boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
+                  background: `conic-gradient(${activities.map((item, i) =>
+                    `${item.color} ${i * (100 / activities.length)}% ${(i + 1) * (100 / activities.length)}%`
+                  ).join(', ')})`
+                }}
+              >
+                {/* Wheel Segments Content */}
+                {activities.map((item, i) => {
+                  const angle = (360 / activities.length) * i + (360 / activities.length / 2);
+                  return (
+                    <div
+                      key={i}
+                      className="absolute top-0 left-0 w-full h-full flex flex-col items-center pt-8 md:pt-12 pointer-events-none"
+                      style={{ transform: `rotate(${angle}deg)` }}
                     >
-                      <span className="text-xl mb-1">{activity.icon}</span>
-                      <span className="text-shadow">{activity.name}</span>
+                      <span
+                        className="text-2xl md:text-3xl filter drop-shadow-md transform -rotate-90"
+                        style={{ transform: `rotate(${-angle}deg)` }}
+                      >
+                        {item.icon}
+                      </span>
+                      <span
+                        className="text-[10px] md:text-xs font-bold text-white uppercase tracking-wider mt-2 px-1 text-center max-w-[80px]"
+                        style={{ transform: `rotate(${-angle}deg)`, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                      >
+                        {item.name}
+                      </span>
                     </div>
-                  </div>
-                );
-              })}
-            </motion.div>
+                  )
+                })}
 
-            {/* Çevirme butonu */}
-            <motion.button
+                {/* Center Cap */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-slate-900 rounded-full border-4 border-slate-700 flex items-center justify-center shadow-2xl z-20">
+                  <span className="text-2xl">🎯</span>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <div className="flex flex-col items-center gap-4 z-20">
+            <button
               onClick={spinWheel}
               disabled={spinning}
-              whileHover={{ scale: spinning ? 1 : 1.05 }}
-              whileTap={{ scale: spinning ? 1 : 0.95 }}
-              className="mt-8 bg-indigo-600 text-white px-8 py-4 rounded-full text-xl font-bold shadow-lg 
-                         hover:bg-indigo-700 transition-all duration-200 w-64 mx-auto block"
+              className={`
+                px-10 py-4 rounded-2xl font-bold text-xl transition-all transform
+                ${spinning
+                  ? 'bg-slate-700 text-slate-400 cursor-not-allowed scale-95'
+                  : 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-blue-500/30 hover:scale-105 active:scale-95'
+                }
+              `}
             >
-              {spinning ? 'Çevriliyor...' : 'Çarkı Çevir'}
-            </motion.button>
+              {spinning ? 'Belirleniyor...' : 'Görevi Belirle'}
+            </button>
 
-            {/* Seçilen aktivite */}
-            {selectedActivity && !spinning && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-8 p-8 bg-white rounded-xl shadow-lg text-center max-w-2xl"
-              >
-                <h3 className="text-2xl font-bold mb-4">Seçilen Aktivite</h3>
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <span className="text-5xl">{selectedActivity.icon}</span>
-                  <span className="text-3xl font-semibold" style={{ color: selectedActivity.color }}>
-                    {selectedActivity.name}
-                  </span>
-                </div>
-                <p className="text-gray-600 text-lg mt-4">
-                  {getActivityDescription(selectedActivity.name)}
-                </p>
-              </motion.div>
+            {!user && (
+              <Link href="/giris" className="text-sm text-slate-500 hover:text-slate-300 transition-colors">
+                Giriş yap
+              </Link>
             )}
           </div>
-        </div>
-      </div>
 
-      <style jsx global>{`
-        .text-shadow {
-          text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-      `}</style>
+        </div>
+
+        {/* Result Modal / Overlay */}
+        <AnimatePresence>
+          {selectedActivity && !spinning && (
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+              onClick={() => setSelectedActivity(null)}
+            >
+              <div
+                className="bg-slate-900 border border-white/10 p-8 rounded-3xl max-w-md w-full relative shadow-2xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Glow effect matching activity color */}
+                <div
+                  className="absolute top-0 left-0 w-full h-2"
+                  style={{ backgroundColor: selectedActivity.color }}
+                />
+
+                <div className="text-center space-y-6">
+                  <div
+                    className="w-24 h-24 mx-auto rounded-full flex items-center justify-center text-6xl shadow-xl mb-4"
+                    style={{ backgroundColor: `${selectedActivity.color}20`, border: `2px solid ${selectedActivity.color}` }}
+                  >
+                    {selectedActivity.icon}
+                  </div>
+
+                  <div>
+                    <h2 className="text-3xl font-bold text-white mb-2">{selectedActivity.name}</h2>
+                    <p className="text-slate-300 leading-relaxed">
+                      {selectedActivity.desc}
+                    </p>
+                  </div>
+
+                  <div className="pt-6 border-t border-white/10">
+                    <button
+                      onClick={() => setSelectedActivity(null)}
+                      className="w-full py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                    >
+                      Kabul Et
+                    </button>
+                    {!user && (
+                      <p className="mt-4 text-xs text-slate-500">
+                        (Bu aktiviteyi profilinize kaydetmek için giriş yapmalısınız)
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </div>
     </div>
   );
 } 

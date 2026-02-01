@@ -66,7 +66,7 @@ const NavbarContent = () => {
     const isActive = activeRoute === route;
     return `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap ${isActive
       ? 'bg-blue-600 text-white shadow-lg'
-      : 'text-gray-700 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-700'
+      : 'text-gray-700 hover:bg-gray-200 dark:text-white dark:hover:bg-white/10'
       }`;
   };
 
@@ -88,13 +88,7 @@ const NavbarContent = () => {
             ))}
           </div>
           <div className="flex items-center space-x-3 ml-4">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:scale-110 transition-transform"
-              title={theme === 'individual' ? 'Bağ Moduna Geç' : 'Birey Moduna Geç'}
-            >
-              {theme === 'individual' ? '🔵' : '🟠'}
-            </button>
+
 
             <Link href="/giris">
               <motion.button

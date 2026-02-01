@@ -43,65 +43,18 @@
 
 
 body {
-  color: #f1f5f9;
-  /* Slate-100 for better default readability on dark bg */
-  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-  /* Simpler dark gradient */
+  color: #f8fafc;
+  /* Slate 50 */
+  background-color: #020617;
+  /* Slate 950 */
+  background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 70%);
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
 }
 
-/* Enhancing visibility for texts on glass backgrounds */
 .glass {
-  color: #1a202c;
-  /* Default dark for light mode glass */
-}
-
-@media (prefers-color-scheme: dark) {
-  .glass {
-    color: #f7fafc;
-    /* White for dark mode glass */
-  }
-}
-
-/* Glassmorphism Utilities */
-.glass {
-  background: var(--card-bg);
+  background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
-}
-
-/* Animations */
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-
-  100% {
-    transform: translateY(0px);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

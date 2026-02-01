@@ -1,15 +1,18 @@
 
 'use client';
 
-import { useState, Suspense, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { weeksContent } from './data/topicContent';
 import { useAuth } from './context/AuthContext';
 
-// Dynamic imports for heavy components
-const ParticleBackground = dynamic(() => import('./components/ParticleBackground'), { ssr: false });
+// Dynamic imports with specific loading behavior
+const ParticleBackground = dynamic(() => import('./components/ParticleBackground'), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 bg-slate-950 -z-50" />
+});
 const ChoiceEngine = dynamic(() => import('./components/ChoiceEngine'), { ssr: false });
 const InsightDashboard = dynamic(() => import('./components/InsightDashboard'), { ssr: false });
 
@@ -32,14 +35,6 @@ const topicAlts: Record<string, string> = {
 };
 
 export default function Home() {
-  return (
-    <Suspense fallback={<div>Yükleniyor...</div>}>
-      <HomeContent />
-    </Suspense>
-  );
-}
-
-function HomeContent() {
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [progressionWeek, setProgressionWeek] = useState(1);
   const { user } = useAuth();
@@ -61,168 +56,243 @@ function HomeContent() {
   const selectedTopic = weeksContent.find(w => w.id === selectedTopicId);
 
   return (
-    <main className="min-h-screen relative overflow-x-hidden">
-      {/* 3D Background */}
-      {/* 3D Background */}
-      <div className="fixed inset-0 -z-10">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30">
+
+      {/* 1. BACKGROUND LAYERS */}
+      {/* Fixed gradient fallback */}
+      <div
+        className="fixed inset-0 bg-gradient-to-b from-slate-900 to-slate-950 pointer-events-none"
+        style={{ zIndex: 0 }}
+      />
+
+      {/* Particles Layer */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{ zIndex: 1 }}
+      >
         <ParticleBackground />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-48 pb-12 space-y-32">
+      {/* 2. SCROLLABLE SKELETON */}
+      <div className="relative" style={{ zIndex: 10 }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
 
-        {/* Massive Hero Section */}
-        <section className="text-center space-y-8 relative">
+          {/* HERO SECTION */}
+          {/* Padding top adjusted to account for fixed navbar (approx 80px) + visual spacing */}
+          <section className="min-h-[90vh] flex flex-col items-center justify-center text-center pt-20">
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          >
-            <h1 className="text-7xl md:text-9xl font-black tracking-tighter mb-4 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-              İKİZ<br />GELİŞİM
-            </h1>
-          </motion.div>
+            <div className="space-y-8 animate-in fade-in zoom-in duration-700">
+              <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tight text-white drop-shadow-2xl">
+                İKİZ<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                  GELİŞİM
+                </span>
+              </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="text-2xl md:text-3xl font-light text-gray-200 max-w-4xl mx-auto leading-relaxed"
-          >
-            Bilimsel veri, yapay zeka ve <span className="font-bold text-blue-400">bireyselleşme yolculuğu</span>.
-          </motion.p>
+              <p className="max-w-3xl mx-auto text-xl md:text-3xl text-slate-300 font-light leading-relaxed">
+                Yapay zeka destekli, kişiselleştirilmiş <br className="hidden md:block" />
+                <span className="font-semibold text-white">bireyselleşme ve gelişim platformu</span>.
+              </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="flex justify-center gap-6 mt-12"
-          >
-            <a href="#modules" className="px-8 py-4 bg-white text-black rounded-full text-lg font-bold hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-              Keşfetmeye Başla
-            </a>
-            <a href="/kayit" className="px-8 py-4 bg-transparent border-2 border-gray-400 text-white rounded-full text-lg font-bold hover:bg-white/10 transition-colors">
-              Araştırmaya Katıl
-            </a>
-          </motion.div>
-        </section>
-
-        {/* Modules Grid */}
-        <div id="modules" className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Choice Engine Module */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            <ChoiceEngine />
-          </motion.div>
-
-          {/* Insight Dashboard Module */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            <InsightDashboard />
-          </motion.div>
-        </div>
-
-        {/* Topics Section (6-Week Scheduler) */}
-        <section>
-          <h2 className="text-4xl font-bold text-center mb-12">6 Haftalık Gelişim Programı</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {weeksContent.map((week, index) => {
-              // Lock logic: If no user, lock everything > Week 1. If user, lock > progressionWeek.
-              const isLocked = user ? (week.week > progressionWeek) : (week.week > 1);
-
-              return (
-                <motion.div
-                  key={week.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className={`glass rounded-xl overflow-hidden hover:scale-105 transition-transform cursor-pointer relative group ${isLocked ? 'grayscale opacity-70' : ''}`}
-                  onClick={() => !isLocked && setSelectedTopicId(week.id)}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+                <a
+                  href="#modules"
+                  className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-blue-500/25 transform hover:-translate-y-1"
                 >
-                  {/* Lock Overlay */}
-                  {isLocked && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black/50 backdrop-blur-[2px]">
-                      <svg className="w-16 h-16 text-white/80 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <span className="text-white font-bold tracking-wider">KİLİTLİ</span>
-                      {!user && <span className="text-gray-300 text-xs mt-1">Giriş Yapmalısınız</span>}
-                    </div>
-                  )}
+                  Keşfetmeye Başla
+                </a>
+                <LinkButton href="/kayit" variant="outline">
+                  Kayıt Ol / Giriş Yap
+                </LinkButton>
+              </div>
+            </div>
 
-                  <div className="relative h-48">
-                    <Image
-                      src={topicImages[week.id] || topicImages['kimlik-gelisimi']}
-                      alt={topicAlts[week.id] || "Görsel"}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute top-4 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                      HAFTA {week.week}
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-10 animate-bounce text-slate-500">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </div>
+          </section>
+
+          {/* MAIN MODULES GRID */}
+          <div id="modules" className="py-20 scroll-mt-24">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+              <div className="bg-slate-900/50 backdrop-blur-sm p-1 rounded-3xl border border-white/10 hover:border-blue-500/50 transition-colors">
+                <ChoiceEngine />
+              </div>
+              <div className="bg-slate-900/50 backdrop-blur-sm p-1 rounded-3xl border border-white/10 hover:border-purple-500/50 transition-colors">
+                <InsightDashboard />
+              </div>
+            </div>
+          </div>
+
+          {/* WEEKLY PROGRAM (TOPICS) */}
+          <section className="py-20">
+            <div className="text-center mb-16 space-y-4">
+              <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                6 Haftalık Gelişim Programı
+              </h2>
+              <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+                Adım adım ilerleyen, bilimsel temelli gelişim modülleri.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {weeksContent.map((week) => {
+                const isLocked = user ? (week.week > progressionWeek) : (week.week > 1);
+
+                return (
+                  <div
+                    key={week.id}
+                    onClick={() => !isLocked && setSelectedTopicId(week.id)}
+                    className={`
+                      group relative overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 transition-all duration-300
+                      ${isLocked ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-2 hover:shadow-2xl hover:border-blue-500/30'}
+                    `}
+                  >
+                    {/* Image Header */}
+                    <div className="relative h-48 w-full">
+                      <Image
+                        src={topicImages[week.id] || topicImages['kimlik-gelisimi']}
+                        alt={topicAlts[week.id] || "Modül Görseli"}
+                        fill
+                        className={`object-cover transition-transform duration-700 ${!isLocked && 'group-hover:scale-110'}`}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-80" />
+
+                      <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">
+                        <span className="text-xs font-bold text-white uppercase tracking-wider">Hafta {week.week}</span>
+                      </div>
+
+                      {isLocked && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/60 backdrop-blur-sm z-10 transition-opacity">
+                          <div className="p-3 bg-slate-800 rounded-full border border-slate-700">
+                            <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
+                          <span className="mt-2 text-sm font-medium text-slate-300">KİLİTLİ MODÜL</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+                        {week.title}
+                      </h3>
+                      <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed">
+                        {week.description}
+                      </p>
+
+                      {!isLocked && (
+                        <div className="mt-4 flex items-center text-blue-400 text-sm font-semibold">
+                          Detayları İncele
+                          <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{week.title}</h3>
-                    <p className="text-sm opacity-80 line-clamp-3">
-                      {week.description}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </section>
+                );
+              })}
+            </div>
+          </section>
+
+        </div>
       </div>
 
-      {/* Modal View */}
-      {selectedTopic && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-          onClick={() => setSelectedTopicId(null)}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-900 rounded-2xl max-w-4xl max-h-[90vh] overflow-y-auto p-8 relative shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
+      {/* MODAL (AnimatePresence ensures proper entry/exit animations) */}
+      <AnimatePresence>
+        {selectedTopic && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ zIndex: 100 }}>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setSelectedTopicId(null)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors"
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+
+            {/* Modal Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-4xl max-h-[85vh] overflow-y-auto bg-slate-900 rounded-3xl border border-white/10 shadow-2xl"
             >
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <div className="relative h-72 mb-8 rounded-xl overflow-hidden">
-              <Image
-                src={topicImages[selectedTopic.id]}
-                alt={topicAlts[selectedTopic.id]}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <h2 className="text-3xl font-bold mb-6 text-blue-600 dark:text-blue-400">
-              {selectedTopic.title}
-            </h2>
-            <div className="prose prose-lg dark:prose-invert">
-              {selectedTopic.content.split('\n').map((paragraph: string, index: number) => (
-                <p key={index} className="mb-4 leading-relaxed">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </main>
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedTopicId(null)}
+                className="absolute top-4 right-4 z-20 p-2 bg-black/50 hover:bg-red-500/80 rounded-full text-white transition-colors backdrop-blur-sm"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Modal Hero Image */}
+              <div className="relative h-64 md:h-80 w-full shrink-0">
+                <Image
+                  src={topicImages[selectedTopic.id]}
+                  alt={topicAlts[selectedTopic.id]}
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent" />
+                <div className="absolute bottom-6 left-6 md:left-10 right-6">
+                  <span className="inline-block px-3 py-1 bg-blue-600 rounded-md text-xs font-bold text-white uppercase tracking-wider mb-2">
+                    Hafta {selectedTopic.week}
+                  </span>
+                  <h2 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg">
+                    {selectedTopic.title}
+                  </h2>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 md:p-10">
+                <div className="prose prose-lg prose-invert max-w-none">
+                  {selectedTopic.content.split('\n').map((paragraph, idx) => (
+                    <p key={idx} className="text-slate-300 leading-relaxed mb-4">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+
+                <div className="mt-10 pt-6 border-t border-slate-800 flex justify-end">
+                  <button
+                    onClick={() => setSelectedTopicId(null)}
+                    className="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                  >
+                    Tamamla ve Kapat
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+    </div>
   );
 }
 
+// Simple helper component for consistent buttons
+function LinkButton({ href, children, variant = 'primary' }: { href: string, children: React.ReactNode, variant?: 'primary' | 'outline' }) {
+  const baseClass = "px-8 py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center";
+  const variants = {
+    primary: "bg-blue-600 hover:bg-blue-500 text-white shadow-lg hover:shadow-blue-500/25",
+    outline: "bg-transparent border-2 border-slate-700 hover:border-slate-500 text-white hover:bg-slate-800/50"
+  };
+
+  return (
+    <a href={href} className={`${baseClass} ${variants[variant]}`}>
+      {children}
+    </a>
+  );
+}

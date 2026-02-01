@@ -10,7 +10,8 @@ import {
     Legend
 } from 'chart.js';
 import { Radar } from 'react-chartjs-2';
-import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import Link from 'next/link';
 
 ChartJS.register(
     RadialLinearScale,
@@ -22,23 +23,26 @@ ChartJS.register(
 );
 
 export default function InsightDashboard() {
-    const { theme } = useTheme();
+    const { user } = useAuth();
+
+    // Data Logic: Zeroes if no user
+    const currentData = user ? [65, 59, 90, 81, 56, 55] : [0, 0, 0, 0, 0, 0];
 
     const data = {
         labels: ['Özerklik', 'Bağlılık', 'Sosyal Yetkinlik', 'Özgüven', 'Risk Alma', 'Empati'],
         datasets: [
             {
                 label: 'Mevcut Durum',
-                data: [65, 59, 90, 81, 56, 55],
-                backgroundColor: theme === 'individual' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(249, 115, 22, 0.2)',
-                borderColor: theme === 'individual' ? 'rgba(59, 130, 246, 1)' : 'rgba(249, 115, 22, 1)',
+                data: currentData,
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: 'rgba(59, 130, 246, 1)',
                 borderWidth: 2,
             },
             {
                 label: 'Hedef',
                 data: [80, 70, 85, 90, 70, 80],
-                backgroundColor: 'rgba(200, 200, 200, 0.1)',
-                borderColor: 'rgba(200, 200, 200, 0.5)',
+                backgroundColor: 'rgba(200, 200, 200, 0.05)',
+                borderColor: 'rgba(200, 200, 200, 0.3)',
                 borderWidth: 1,
                 borderDash: [5, 5]
             },
@@ -61,7 +65,9 @@ export default function InsightDashboard() {
                 ticks: {
                     backdropColor: 'transparent',
                     display: false
-                }
+                },
+                suggestedMin: 0,
+                suggestedMax: 100
             }
         },
         plugins: {
@@ -74,11 +80,29 @@ export default function InsightDashboard() {
     };
 
     return (
-        <div className="w-full max-w-lg mx-auto rounded-3xl overflow-hidden shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] transition-all duration-500">
+        <div className="relative w-full max-w-lg mx-auto rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 h-[500px] flex flex-col bg-slate-900 border border-white/10">
             {/* Dark Glass Background */}
-            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-2xl z-0 border border-white/10"></div>
+            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-2xl z-0"></div>
 
-            <div className="relative z-10 p-8">
+            {/* Login Overlay if !user */}
+            {!user && (
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm p-6 text-center">
+                    <div className="p-3 bg-blue-500/20 rounded-full mb-4">
+                        <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Analiz Kilitli</h3>
+                    <p className="text-slate-400 text-sm mb-6">
+                        Kişisel gelişim haritanızı görmek için hesabınıza giriş yapın.
+                    </p>
+                    <Link href="/giris" className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-500 transition-colors">
+                        Giriş Yap
+                    </Link>
+                </div>
+            )}
+
+            <div className="relative z-10 p-8 flex-1 flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-black text-white">
                         Gelişim Radarı
@@ -88,25 +112,27 @@ export default function InsightDashboard() {
                     </span>
                 </div>
 
-                <div className="relative h-72 w-full mb-8">
+                <div className="relative flex-1 min-h-0">
                     <Radar data={data} options={options as any} />
                 </div>
 
-                <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                <div className="mt-6 bg-white/5 p-4 rounded-2xl border border-white/10">
                     <div className="flex items-start gap-4">
-                        <div className="p-3 bg-yellow-500/20 text-yellow-400 rounded-xl">
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="p-2 bg-yellow-500/20 text-yellow-400 rounded-xl mt-1">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </div>
                         <div>
-                            <h3 className="font-bold text-white mb-1">Gelişim Fırsatı</h3>
-                            <p className="text-sm text-gray-300 mb-3">
-                                "Risk Alma" puanın hedefin biraz altında. Yeni bir hobi denemek özgüvenini artırabilir.
+                            <h3 className="font-bold text-white text-sm mb-1">Gelişim Fırsatı</h3>
+                            <p className="text-xs text-gray-400 mb-2">
+                                {user ? '"Risk Alma" puanın hedefin biraz altında. Yeni bir hobi denemek özgüvenini artırabilir.' : 'Giriş yaptığınızda size özel öneriler burada görünecektir.'}
                             </p>
-                            <button className="text-sm font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors">
-                                Önerilen Aktiviteyi Gör ➜
-                            </button>
+                            {user && (
+                                <button className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors">
+                                    Önerilen Aktiviteyi Gör ➜
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

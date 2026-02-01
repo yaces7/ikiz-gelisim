@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import Link from 'next/link';
+import Confetti from 'react-confetti';
 
 interface Character {
   name: string;
@@ -12,40 +15,22 @@ interface Character {
   strengths: string[];
 }
 
-const personalityTraits = [
-  'Yaratıcı', 'Düşünceli', 'Enerjik', 'Sakin', 'Lider', 'Yardımsever',
-  'Meraklı', 'Cesur', 'Sabırlı', 'Özgüvenli', 'Neşeli', 'Kararlı'
-];
-
-const hobbies = [
-  'Resim', 'Müzik', 'Dans', 'Spor', 'Kitap Okuma', 'Yazı Yazma',
-  'Bahçecilik', 'Fotoğrafçılık', 'Yemek Yapma', 'Bilgisayar', 'Satranç', 'Yüzme'
-];
-
-const dreams = [
-  'Bilim İnsanı', 'Sanatçı', 'Sporcu', 'Doktor', 'Öğretmen', 'Mühendis',
-  'Yazar', 'Müzisyen', 'Şef', 'Pilot', 'Veteriner', 'Tasarımcı'
-];
-
-const strengths = [
-  'Problem Çözme', 'İletişim', 'Organizasyon', 'Yaratıcılık', 'Empati', 'Analitik Düşünme',
-  'Takım Çalışması', 'Liderlik', 'Adaptasyon', 'Öğrenme Hızı', 'El Becerisi', 'Hafıza'
-];
-
-const avatars = [
-  '👧', '👦', '👩', '👨', '🧑‍🎨', '🧑‍🔬', '🧑‍🌾', '🧑‍🏫', 
-  '🧑‍💻', '🧑‍🍳', '🧑‍✈️', '🧑‍🎤'
-];
+const personalityTraits = ['Yaratıcı', 'Düşünceli', 'Enerjik', 'Sakin', 'Lider', 'Yardımsever', 'Meraklı', 'Cesur', 'Sabırlı', 'Özgüvenli', 'Neşeli', 'Kararlı'];
+const hobbies = ['Resim', 'Müzik', 'Dans', 'Spor', 'Kitap Okuma', 'Yazı Yazma', 'Bahçecilik', 'Fotoğrafçılık', 'Yemek Yapma', 'Bilgisayar', 'Satranç', 'Yüzme'];
+const dreams = ['Bilim İnsanı', 'Sanatçı', 'Sporcu', 'Doktor', 'Öğretmen', 'Mühendis', 'Yazar', 'Müzisyen', 'Şef', 'Pilot', 'Veteriner', 'Tasarımcı'];
+const strengths = ['Problem Çözme', 'İletişim', 'Organizasyon', 'Yaratıcılık', 'Empati', 'Analitik Düşünme', 'Takım Çalışması', 'Liderlik', 'Adaptasyon', 'Öğrenme Hızı', 'El Becerisi', 'Hafıza'];
+const avatars = ['👧', '👦', '👩', '👨', '🧑‍🎨', '🧑‍🔬', '🧑‍🌾', '🧑‍🏫', '🧑‍💻', '🧑‍🍳', '🧑‍✈️', '🧑‍🎤'];
 
 export default function CharacterGame() {
   return (
-    <Suspense fallback={<div>Yükleniyor...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Yükleniyor...</div>}>
       <CharacterGameContent />
     </Suspense>
   );
 }
 
 function CharacterGameContent() {
+  const { user } = useAuth();
   const [character, setCharacter] = useState<Character>({
     name: '',
     avatar: '',
@@ -57,13 +42,40 @@ function CharacterGameContent() {
   const [step, setStep] = useState(1);
   const [showResult, setShowResult] = useState(false);
 
+  // If not logged in, show strict gate
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <div className="bg-slate-900 border border-white/10 p-8 rounded-3xl max-w-md w-full text-center shadow-2xl">
+          <div className="inline-block p-4 bg-purple-500/20 rounded-full mb-6">
+            <svg className="w-10 h-10 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-4">Karakter Oluşturucu</h1>
+          <p className="text-slate-400 mb-8 leading-relaxed">
+            Kendi özgün karakterini tasarlamak ve gelişim yolculuğuna başlamak için lütfen giriş yap.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link href="/giris" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors">
+              Giriş Yap
+            </Link>
+            <Link href="/" className="text-slate-500 text-sm hover:text-slate-300">
+              Ana Sayfaya Dön
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleSelect = (category: keyof Character, item: string) => {
     if (category === 'avatar') {
       setCharacter(prev => ({ ...prev, [category]: item }));
     } else {
       setCharacter(prev => ({
         ...prev,
-        [category]: Array.isArray(prev[category]) 
+        [category]: Array.isArray(prev[category])
           ? (prev[category] as string[]).includes(item)
             ? (prev[category] as string[]).filter((i: string) => i !== item)
             : [...(prev[category] as string[]), item].slice(0, 3)
@@ -73,144 +85,104 @@ function CharacterGameContent() {
   };
 
   const nextStep = () => {
-    if (step < 6) {
-      setStep(step + 1);
-    } else {
-      setShowResult(true);
-    }
+    if (step < 6) setStep(step + 1);
+    else setShowResult(true);
   };
 
   const prevStep = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
+    if (step > 1) setStep(step - 1);
   };
+
+  const renderProgress = () => (
+    <div className="mb-8">
+      <div className="flex justify-between text-xs text-slate-400 mb-2 uppercase tracking-widest font-bold">
+        <span>İsim & Görünüm</span>
+        <span>Kişilik</span>
+        <span>Hedefler</span>
+      </div>
+      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+        <motion.div
+          className="h-full bg-blue-500"
+          initial={{ width: 0 }}
+          animate={{ width: `${(step / 6) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
 
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4 text-black">İsminizi Girin</h2>
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white">İsmin Nedir?</h2>
+            <p className="text-slate-400">Karakterine vereceğin isim, onun hikayesinin başlangıcıdır.</p>
             <input
               type="text"
               value={character.name}
               onChange={(e) => setCharacter(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full p-3 border rounded-lg"
-              placeholder="İsminizi yazın"
+              className="w-full p-4 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+              placeholder="Örn: Cesur Gezgin"
+              autoFocus
             />
           </div>
         );
       case 2:
         return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4 text-black">Avatarınızı Seçin</h2>
-            <div className="grid grid-cols-4 gap-4">
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white">Görünümünü Seç</h2>
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
               {avatars.map((avatar, index) => (
-                <motion.button
+                <button
                   key={index}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
                   onClick={() => handleSelect('avatar', avatar)}
-                  className={`text-4xl p-4 rounded-lg ${
-                    character.avatar === avatar ? 'bg-purple-200' : 'bg-gray-100'
-                  }`}
+                  className={`text-4xl p-4 rounded-xl transition-all ${character.avatar === avatar
+                      ? 'bg-blue-600 scale-110 shadow-lg ring-2 ring-blue-400'
+                      : 'bg-slate-800 hover:bg-slate-700'
+                    }`}
                 >
                   {avatar}
-                </motion.button>
+                </button>
               ))}
             </div>
           </div>
         );
       case 3:
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4 text-black">Kişilik Özelliklerinizi Seçin (En fazla 3)</h2>
-            <div className="grid grid-cols-3 gap-4">
-              {personalityTraits.map((trait, index) => (
-                <motion.button
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleSelect('personality', trait)}
-                  className={`p-3 rounded-lg ${
-                    character.personality.includes(trait)
-                      ? 'bg-purple-500 text-black'
-                      : 'bg-gray-100 text-black'
-                  }`}
-                >
-                  {trait}
-                </motion.button>
-              ))}
-            </div>
-          </div>
-        );
       case 4:
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4 text-black">Hobilerinizi Seçin (En fazla 3)</h2>
-            <div className="grid grid-cols-3 gap-4">
-              {hobbies.map((hobby, index) => (
-                <motion.button
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleSelect('hobbies', hobby)}
-                  className={`p-3 rounded-lg ${
-                    character.hobbies.includes(hobby)
-                      ? 'bg-purple-500 text-black'
-                      : 'bg-gray-100 text-black'
-                  }`}
-                >
-                  {hobby}
-                </motion.button>
-              ))}
-            </div>
-          </div>
-        );
       case 5:
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4 text-black">Hayallerinizi Seçin (En fazla 3)</h2>
-            <div className="grid grid-cols-3 gap-4">
-              {dreams.map((dream, index) => (
-                <motion.button
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleSelect('dreams', dream)}
-                  className={`p-3 rounded-lg ${
-                    character.dreams.includes(dream)
-                      ? 'bg-purple-500 text-black'
-                      : 'bg-gray-100 text-black'
-                  }`}
-                >
-                  {dream}
-                </motion.button>
-              ))}
-            </div>
-          </div>
-        );
       case 6:
+        const config = {
+          3: { title: 'Kişilik Özellikleri', data: personalityTraits, key: 'personality' as keyof Character, limit: 3 },
+          4: { title: 'İlgi Alanları & Hobiler', data: hobbies, key: 'hobbies' as keyof Character, limit: 3 },
+          5: { title: 'Gelecek Hayalleri', data: dreams, key: 'dreams' as keyof Character, limit: 3 },
+          6: { title: 'Güçlü Yönlerin', data: strengths, key: 'strengths' as keyof Character, limit: 3 }
+        }[step]!;
+
+        const currentSelection = character[config.key] as string[];
+
         return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-4 text-black">Güçlü Yönlerinizi Seçin (En fazla 3)</h2>
-            <div className="grid grid-cols-3 gap-4">
-              {strengths.map((strength, index) => (
-                <motion.button
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleSelect('strengths', strength)}
-                  className={`p-3 rounded-lg ${
-                    character.strengths.includes(strength)
-                      ? 'bg-purple-500 text-black'
-                      : 'bg-gray-100 text-black'
-                  }`}
-                >
-                  {strength}
-                </motion.button>
-              ))}
+          <div className="space-y-6">
+            <div className="flex justify-between items-end">
+              <h2 className="text-3xl font-bold text-white">{config.title}</h2>
+              <span className="text-sm font-bold text-blue-400">{currentSelection.length} / {config.limit} Seçildi</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {config.data.map((item, index) => {
+                const isSelected = currentSelection.includes(item);
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleSelect(config.key, item)}
+                    className={`p-3 rounded-lg text-sm font-bold transition-all text-left ${isSelected
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      }`}
+                  >
+                    {item}
+                    {isSelected && <span className="float-right">✓</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
         );
@@ -219,138 +191,123 @@ function CharacterGameContent() {
     }
   };
 
+  const canProceed = () => {
+    if (step === 1) return character.name.length > 2;
+    if (step === 2) return !!character.avatar;
+    // For array steps, require at least 1 selection
+    const key = { 3: 'personality', 4: 'hobbies', 5: 'dreams', 6: 'strengths' }[step] as keyof Character;
+    return (character[key] as string[]).length > 0;
+  };
+
   if (showResult) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-yellow-500 to-gray-900 py-12">
-        <div className="max-w-4xl mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-black rounded-xl p-8 shadow-xl"
-          >
-            <h2 className="text-3xl font-bold mb-8 text-center text-black">Karakterin Hazır!</h2>
-            <div className="grid grid-cols-2 gap-8">
-              <div className="text-center">
-                <div className="text-8xl mb-4">{character.avatar}</div>
-                <h3 className="text-2xl font-bold mb-2 text-black">{character.name}</h3>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
+        <Confetti numberOfPieces={300} recycle={false} />
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-slate-900 border border-white/10 p-8 rounded-3xl max-w-2xl w-full shadow-2xl relative overflow-hidden"
+        >
+          {/* Card Header Background */}
+          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-blue-600 to-purple-600 opacity-20" />
+
+          <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center md:items-start">
+            <div className="flex-shrink-0 text-center">
+              <div className="w-32 h-32 bg-slate-800 rounded-full flex items-center justify-center text-8xl shadow-2xl border-4 border-slate-700 mb-4 mx-auto">
+                {character.avatar}
               </div>
-              <div className="space-y-4">
+              <h2 className="text-2xl font-black text-white">{character.name}</h2>
+              <div className="text-sm text-blue-400 font-bold tracking-widest uppercase mt-1">Gelişim Yolcusu</div>
+            </div>
+
+            <div className="flex-grow space-y-6 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-bold mb-2 text-black">Kişilik Özellikleri:</h4>
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kişilik</h3>
                   <div className="flex flex-wrap gap-2">
-                    {character.personality.map((trait, index) => (
-                      <span key={index} className="bg-purple-100 px-3 py-1 rounded-full text-black">
-                        {trait}
-                      </span>
-                    ))}
+                    {character.personality.map(p => <span key={p} className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs font-bold">{p}</span>)}
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-bold mb-2 text-black">Hobiler:</h4>
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Güçlü Yönler</h3>
                   <div className="flex flex-wrap gap-2">
-                    {character.hobbies.map((hobby, index) => (
-                      <span key={index} className="bg-blue-100 px-3 py-1 rounded-full text-black">
-                        {hobby}
-                      </span>
-                    ))}
+                    {character.strengths.map(p => <span key={p} className="px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded text-xs font-bold">{p}</span>)}
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-bold mb-2 text-black">Hayaller:</h4>
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">İlgi Alanları</h3>
                   <div className="flex flex-wrap gap-2">
-                    {character.dreams.map((dream, index) => (
-                      <span key={index} className="bg-green-100 px-3 py-1 rounded-full text-black">
-                        {dream}
-                      </span>
-                    ))}
+                    {character.hobbies.map(p => <span key={p} className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs font-bold">{p}</span>)}
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-bold mb-2 text-black">Güçlü Yönler:</h4>
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hedefler</h3>
                   <div className="flex flex-wrap gap-2">
-                    {character.strengths.map((strength, index) => (
-                      <span key={index} className="bg-yellow-100 px-3 py-1 rounded-full text-black">
-                        {strength}
-                      </span>
-                    ))}
+                    {character.dreams.map(p => <span key={p} className="px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs font-bold">{p}</span>)}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="mt-8 text-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setCharacter({
-                    name: '',
-                    avatar: '',
-                    personality: [],
-                    hobbies: [],
-                    dreams: [],
-                    strengths: []
-                  });
-                  setStep(1);
-                  setShowResult(false);
-                }}
-                className="bg-purple-600 text-black px-8 py-3 rounded-lg font-bold"
-              >
-                Yeni Karakter Oluştur
-              </motion.button>
-            </div>
-          </motion.div>
-        </div>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-slate-800 flex justify-end gap-4">
+            <button
+              onClick={() => { setShowResult(false); setStep(1); setCharacter({ name: '', avatar: '', personality: [], hobbies: [], dreams: [], strengths: [] }); }}
+              className="px-6 py-3 rounded-xl font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition"
+            >
+              Yeni Oluştur
+            </button>
+            <Link href="/" className="px-6 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 transition shadow-lg">
+              Maceraya Başla
+            </Link>
+          </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-yellow-500 to-gray-900 py-12">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="bg-black rounded-xl p-8 shadow-xl">
-          <h1 className="text-3xl font-bold mb-8 text-center text-black">Kendi Karakterini Oluştur</h1>
-          
-          {renderStep()}
+    <div className="min-h-screen bg-slate-950 text-slate-100 py-12 px-4 selection:bg-blue-500/30">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-slate-900/50 border border-white/5 p-8 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden backdrop-blur-md">
+          {/* Decorative Background Blob */}
+          <div className="absolute -top-20 -right-20 w-60 h-60 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="mt-8 flex justify-between">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          {renderProgress()}
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -20, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="min-h-[300px]"
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="mt-8 flex justify-between pt-8 border-t border-white/5">
+            <button
               onClick={prevStep}
               disabled={step === 1}
-              className={`px-6 py-2 rounded-lg ${
-                step === 1
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-gray-600 text-black'
-              }`}
+              className={`px-6 py-3 rounded-xl font-bold transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
             >
               Geri
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            </button>
+
+            <button
               onClick={nextStep}
-              disabled={
-                (step === 1 && !character.name) ||
-                (step === 2 && !character.avatar) ||
-                (step === 3 && character.personality.length === 0) ||
-                (step === 4 && character.hobbies.length === 0) ||
-                (step === 5 && character.dreams.length === 0) ||
-                (step === 6 && character.strengths.length === 0)
-              }
-              className={`px-6 py-2 rounded-lg ${
-                ((step === 1 && !character.name) ||
-                (step === 2 && !character.avatar) ||
-                (step === 3 && character.personality.length === 0) ||
-                (step === 4 && character.hobbies.length === 0) ||
-                (step === 5 && character.dreams.length === 0) ||
-                (step === 6 && character.strengths.length === 0))
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-purple-600 text-black'
-              }`}
+              disabled={!canProceed()}
+              className={`px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform ${canProceed()
+                  ? 'bg-blue-600 text-white hover:bg-blue-500 hover:scale-105'
+                  : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                }`}
             >
-              {step === 6 ? 'Karakteri Tamamla' : 'İleri'}
-            </motion.button>
+              {step === 6 ? 'Tamamla' : 'İlerle'}
+            </button>
           </div>
         </div>
       </div>
