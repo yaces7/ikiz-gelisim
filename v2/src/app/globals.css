@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #0a0a0f;
@@ -72,7 +74,7 @@ body {
   }
 }
 
-/* === FLOATING ORBS (Background) === */
+/* === FLOATING ORBS === */
 .orb {
   position: fixed;
   border-radius: 50%;
@@ -102,7 +104,7 @@ body {
 .btn-primary {
   @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white;
   @apply hover:from-indigo-500 hover:to-purple-500;
-  @apply hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/30;
+  @apply hover:scale-105 hover:shadow-lg;
   @apply active:scale-95;
 }
 
@@ -113,18 +115,20 @@ body {
 
 .btn-ghost {
   @apply bg-transparent text-slate-300;
-  @apply hover:bg-slate-800/50 hover:text-white;
+  @apply hover:bg-slate-800 hover:text-white;
 }
 
 /* === CARD STYLES === */
 .card {
-  @apply glass rounded-2xl p-6 transition-all duration-300;
-  @apply hover:border-white/20;
+  @apply rounded-2xl p-6 transition-all duration-300;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .card-interactive {
-  @apply card cursor-pointer;
-  @apply hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/10;
+  @apply cursor-pointer;
+  @apply hover:scale-[1.02] hover:border-white/20;
 }
 
 /* === PROGRESS BAR === */
@@ -137,7 +141,7 @@ body {
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* === TWIN RINGS LOADER === */
+/* === TWIN LOADER === */
 .twin-loader {
   position: relative;
   width: 80px;
@@ -179,32 +183,14 @@ body {
   }
 }
 
-/* === MICRO INTERACTIONS === */
-.spring-bounce {
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.spring-bounce:hover {
-  transform: scale(1.05);
-}
-
-.spring-bounce:active {
-  transform: scale(0.95);
-}
-
 /* === TEXT GRADIENTS === */
 .text-gradient {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400;
 }
 
-.text-gradient-gold {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400;
-}
-
 /* === SCROLLBAR === */
 ::-webkit-scrollbar {
   width: 8px;
-  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -216,65 +202,7 @@ body {
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
 /* === SELECTION === */
 ::selection {
   background: rgba(99, 102, 241, 0.3);
-  color: white;
-}
-
-/* === FOCUS STATES === */
-input:focus,
-textarea:focus,
-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-}
-
-/* === ANIMATIONS === */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.6s ease-out forwards;
 }
