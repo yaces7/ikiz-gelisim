@@ -184,17 +184,13 @@ function TestInterface() {
   const [completedWeeks, setCompletedWeeks] = useState<number[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [animating, setAnimating] = useState(false);
-
-  // Stats calculation
-  const calculateResult = (weekId: number, answers: number[]) => {
-    const average = answers.reduce((a, b) => a + b, 0) / answers.length;
-    return average;
-  };
+  const [answers, setAnswers] = useState<{ qId: number, score: number }[]>([]);
 
   const handleStartWeek = (weekId: number) => {
     if (!user) return;
     setActiveWeek(weekId);
     setCurrentQuestionIndex(0);
+    setAnswers([]);
     setShowResult(false);
   };
 
@@ -203,32 +199,51 @@ function TestInterface() {
 
     setAnimating(true);
 
-    // Visual Pulse effect handled by CSS/Framer
+    const currentTest = tests.find(t => t.id === activeWeek);
+    if (!currentTest) return;
+
+    const qId = currentTest.questions[currentQuestionIndex].id;
+    const newAnswers = [...answers, { qId, score }];
+    setAnswers(newAnswers);
+
     setTimeout(() => {
-      const currentTest = tests.find(t => t.id === activeWeek);
-      if (!currentTest) return;
-
-      // Save intermediate logic if needed (mocked here)
-
       if (currentQuestionIndex < currentTest.questions.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
         setAnimating(false);
       } else {
-        // Test Finished
-        finishTest(activeWeek, score); // Simplified passing last score, in real app accumulate
+        // Finish Logic
+        const totalScore = newAnswers.reduce((sum, item) => sum + item.score, 0);
+        const averageScore = Math.round(totalScore / newAnswers.length);
+        finishTest(activeWeek, averageScore, newAnswers);
       }
     }, 600);
   };
 
-  const finishTest = (weekId: number, lastScore: number) => {
-    // Mock score calculation - normally we'd track array of answers
-    // Here just using the last score for demo + random variation
-    const finalScore = Math.min(100, Math.max(0, lastScore)); // Dummy logic
-
+  const finishTest = async (weekId: number, finalScore: number, answersLog: any[]) => {
     setScores(prev => ({ ...prev, [weekId]: finalScore }));
     setCompletedWeeks(prev => [...prev, weekId]);
     setShowResult(true);
     setAnimating(false);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await fetch('/api/test/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            weekId,
+            score: finalScore,
+            answers: answersLog
+          })
+        });
+      }
+    } catch (err) {
+      console.error('Save failed', err);
+    }
   };
 
   const closeResult = () => {

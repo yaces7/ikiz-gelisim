@@ -47,6 +47,9 @@ const NavbarContent = () => {
       case 'testler':
         router.push('/testler');
         break;
+      case 'gunluk':
+        router.push('/gunluk');
+        break;
       case 'etkinlikler':
         router.push('/etkinlikler');
         break;
@@ -77,7 +80,7 @@ const NavbarContent = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           <div className="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
-            {['konular', 'carkifelek', 'testler', 'etkinlikler', 'oyunlar', 'karakter-oyunu', 'ebeveyn'].map((route) => (
+            {['konular', 'carkifelek', 'testler', 'gunluk', 'etkinlikler', 'oyunlar', 'karakter-oyunu', 'ebeveyn'].map((route) => (
               <motion.button
                 key={route}
                 onClick={() => handleNavigation(route)}

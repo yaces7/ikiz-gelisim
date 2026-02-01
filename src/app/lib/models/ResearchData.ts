@@ -36,6 +36,7 @@ const InteractionSchema = new Schema({
     action_type: { type: String, enum: ['simulation', 'journal'] },
     content: String,
     impact_score: Number,
+    analysis: Object,
     timestamp: { type: Date, default: Date.now }
 });
 
