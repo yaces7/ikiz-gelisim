@@ -90,21 +90,21 @@ export default function ChoiceEngine() {
                 )}
             </AnimatePresence>
 
-            <div className={`relative w-full max-w-3xl mx-auto rounded-3xl overflow-hidden transition-all duration-700 shadow-2xl ${focusMode ? 'z-50 scale-105 ring-4 ring-blue-500/50' : 'hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)]'}`}>
-                {/* Background Overlay for Readability */}
-                <div className="absolute inset-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl z-0"></div>
+            <div className={`relative w-full max-w-3xl mx-auto rounded-3xl overflow-hidden transition-all duration-700 shadow-2xl ${focusMode ? 'z-50 scale-105 ring-4 ring-blue-500/50' : 'hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]'}`}>
+                {/* Dark Glass Background */}
+                <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-2xl z-0 border border-white/10"></div>
 
                 {/* Content */}
-                <div className="relative z-10 p-8 md:p-12">
-                    <div className="flex justify-between items-center mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
-                        <span className="text-sm font-bold tracking-widest text-blue-600 dark:text-blue-400 uppercase">{activeScenario.stage}</span>
+                <div className="relative z-10 p-8 md:p-12 text-white">
+                    <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+                        <span className="text-sm font-bold tracking-widest text-blue-400 uppercase">{activeScenario.stage}</span>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">Mevcut Skor:</span>
-                            <span className={`font-mono font-bold ${independenceScore > 50 ? 'text-green-500' : 'text-orange-500'}`}>{independenceScore}</span>
+                            <span className="text-xs text-gray-400">Mevcut Skor:</span>
+                            <span className={`font-mono font-bold ${independenceScore > 50 ? 'text-green-400' : 'text-orange-400'}`}>{independenceScore}</span>
                         </div>
                     </div>
 
-                    <h2 className="text-3xl font-black mb-6 text-gray-800 dark:text-white leading-tight">
+                    <h2 className="text-3xl font-black mb-6 text-white leading-tight">
                         {activeScenario.title}
                     </h2>
 
@@ -118,9 +118,9 @@ export default function ChoiceEngine() {
                                 className="space-y-8"
                             >
                                 <div className="min-h-[80px]">
-                                    <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
+                                    <p className="text-lg md:text-xl text-gray-200 leading-relaxed font-medium">
                                         {activeScenario.description.slice(0, textIndex)}
-                                        <span className="animate-pulse text-blue-500">|</span>
+                                        <span className="animate-pulse text-blue-400">|</span>
                                     </p>
                                 </div>
 
@@ -132,17 +132,17 @@ export default function ChoiceEngine() {
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: idx * 0.1 }}
                                             onClick={() => handleChoice(opt)}
-                                            className="group relative flex items-center gap-6 p-6 rounded-2xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-lg text-left"
+                                            className="group relative flex items-center gap-6 p-6 rounded-2xl border border-white/10 bg-white/5 hover:bg-blue-500/20 hover:border-blue-400/50 transition-all duration-300 shadow-sm hover:shadow-lg text-left"
                                         >
                                             <span className="text-4xl">{opt.icon}</span>
                                             <div>
-                                                <h4 className="text-lg font-bold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                <h4 className="text-lg font-bold text-white group-hover:text-blue-300 transition-colors">
                                                     {opt.text}
                                                 </h4>
-                                                <span className="text-xs text-gray-400 group-hover:text-blue-500/70">Seçmek için tıkla</span>
+                                                <span className="text-xs text-gray-400 group-hover:text-blue-200/70">Seçmek için tıkla</span>
                                             </div>
                                             <div className="absolute right-6 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-                                                <svg className="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                                 </svg>
                                             </div>
@@ -157,23 +157,23 @@ export default function ChoiceEngine() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 className="text-center space-y-8 py-4"
                             >
-                                <div className="inline-block p-4 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 mb-2">
+                                <div className="inline-block p-4 rounded-full bg-green-500/20 text-green-400 mb-2">
                                     <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Seçimin Analiz Edildi</h3>
-                                    <p className="text-lg text-gray-600 dark:text-gray-300">"{lastChoice.feedback}"</p>
+                                    <h3 className="text-2xl font-bold text-white">Seçimin Analiz Edildi</h3>
+                                    <p className="text-lg text-gray-300">"{lastChoice.feedback}"</p>
                                 </div>
 
-                                <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
                                     <div className="flex justify-between items-end mb-2">
-                                        <span className="text-sm font-semibold text-gray-500">Bireyselleşme Seviyesi</span>
-                                        <span className="text-3xl font-black text-blue-600 dark:text-blue-400">{independenceScore}%</span>
+                                        <span className="text-sm font-semibold text-gray-400">Bireyselleşme Seviyesi</span>
+                                        <span className="text-3xl font-black text-blue-400">{independenceScore}%</span>
                                     </div>
-                                    <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative">
+                                    <div className="w-full h-4 bg-gray-700 rounded-full overflow-hidden relative">
                                         <motion.div
                                             initial={{ width: `${independenceScore - lastChoice.independenceEffect}%` }}
                                             animate={{ width: `${independenceScore}%` }}
@@ -181,7 +181,7 @@ export default function ChoiceEngine() {
                                             className="h-full absolute top-0 left-0 bg-gradient-to-r from-blue-500 to-indigo-600"
                                         />
                                     </div>
-                                    <div className="flex justify-between mt-2 text-xs text-gray-400">
+                                    <div className="flex justify-between mt-2 text-xs text-gray-500">
                                         <span>Bağımlı</span>
                                         <span>Dengeli</span>
                                         <span>Özerk</span>
@@ -190,7 +190,7 @@ export default function ChoiceEngine() {
 
                                 <button
                                     onClick={reset}
-                                    className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-xl"
+                                    className="w-full py-4 bg-white text-slate-900 rounded-xl font-bold hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-xl hover:bg-gray-100"
                                 >
                                     Sonraki Senaryo
                                 </button>

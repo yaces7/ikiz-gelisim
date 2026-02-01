@@ -67,7 +67,7 @@ function HomeContent() {
         <ParticleBackground />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 space-y-24">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-48 pb-12 space-y-32">
 
         {/* Massive Hero Section */}
         <section className="text-center space-y-8 relative">
@@ -78,7 +78,7 @@ function HomeContent() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
-            <h1 className="text-7xl md:text-9xl font-black tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-b from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 drop-shadow-2xl">
+            <h1 className="text-7xl md:text-9xl font-black tracking-tighter mb-4 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
               İKİZ<br />GELİŞİM
             </h1>
           </motion.div>
@@ -87,9 +87,9 @@ function HomeContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="text-2xl md:text-3xl font-light text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed"
+            className="text-2xl md:text-3xl font-light text-gray-200 max-w-4xl mx-auto leading-relaxed"
           >
-            Bilimsel veri, yapay zeka ve <span className="font-bold text-blue-600 dark:text-blue-400">bireyselleşme yolculuğu</span>.
+            Bilimsel veri, yapay zeka ve <span className="font-bold text-blue-400">bireyselleşme yolculuğu</span>.
           </motion.p>
 
           <motion.div
@@ -98,10 +98,10 @@ function HomeContent() {
             transition={{ delay: 0.8 }}
             className="flex justify-center gap-6 mt-12"
           >
-            <a href="#modules" className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-full text-lg font-bold hover:scale-105 transition-transform shadow-[0_0_40px_rgba(0,0,0,0.3)] dark:shadow-[0_0_40px_rgba(255,255,255,0.3)]">
+            <a href="#modules" className="px-8 py-4 bg-white text-black rounded-full text-lg font-bold hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
               Keşfetmeye Başla
             </a>
-            <a href="/kayit" className="px-8 py-4 bg-transparent border-2 border-gray-300 dark:border-gray-700 rounded-full text-lg font-bold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <a href="/kayit" className="px-8 py-4 bg-transparent border-2 border-gray-400 text-white rounded-full text-lg font-bold hover:bg-white/10 transition-colors">
               Araştırmaya Katıl
             </a>
           </motion.div>
