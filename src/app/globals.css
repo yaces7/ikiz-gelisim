@@ -43,16 +43,13 @@
 
 
 body {
-  color: #ffffff !important;
-  /* Force White Text */
-  background: linear-gradient(135deg, #020617 0%, #0f172a 40%, #2e1065 100%) !important;
-  /* Dark Slate to Deep Purple */
-  background-attachment: fixed !important;
-  /* Fix background during scroll */
+  color: #ffffff;
+  /* Default text color */
+  background: linear-gradient(135deg, #020617 0%, #0f172a 40%, #2e1065 100%);
+  background-attachment: fixed;
   min-height: 100vh;
   font-family: 'Inter', sans-serif;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  /* Improve text readability */
+  /* Removed global text-shadow to prevent muddy text on light cards */
 }
 
 /* Enhancing visibility for texts on glass backgrounds */
