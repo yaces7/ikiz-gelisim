@@ -80,7 +80,16 @@ const NavbarContent = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           <div className="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
-            {['konular', 'carkifelek', 'testler', 'gunluk', 'etkinlikler', 'oyunlar', 'karakter-oyunu', 'ebeveyn'].map((route) => (
+            {[
+              'konular',
+              'carkifelek',
+              'testler',
+              'gunluk',
+              'etkinlikler',
+              'oyunlar',
+              'karakter-oyunu',
+              ...(user?.role === 'parent' || user?.role === 'admin' ? ['ebeveyn'] : [])
+            ].map((route) => (
               <motion.button
                 key={route}
                 onClick={() => handleNavigation(route)}
