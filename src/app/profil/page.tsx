@@ -6,6 +6,28 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
+);
+
 // Mock Data Types - in real app, fetch from API
 type UserStats = {
     independenceScore: number; // 0-100
@@ -27,6 +49,7 @@ function ProfileContent() {
     const { user, logout } = useAuth();
     const router = useRouter();
     const [stats, setStats] = useState<UserStats | null>(null);
+    const [chartData, setChartData] = useState<{ date: string; score: number }[]>([]);
 
     useEffect(() => {
         if (!user) {
@@ -34,15 +57,35 @@ function ProfileContent() {
             return;
         }
 
-        // Simulate fetching data from MongoDB
-        // In reality: fetch('/api/user/stats')
-        setStats({
-            independenceScore: 65,
-            completedTests: 2,
-            completedScenarios: 3,
-            weeklyStreak: 4,
-            lastActivity: 'Bugün, 14:30'
-        });
+        const fetchStats = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const res = await fetch('/api/profile/stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    setStats(data.stats);
+                    setChartData(data.chartData);
+                } else {
+                    // Fallback for new users (or API error) - empty data
+                    setStats({
+                        independenceScore: 50, // Default mid
+                        completedTests: 0,
+                        completedScenarios: 0,
+                        weeklyStreak: 0,
+                        lastActivity: 'Henüz yok'
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to fetch stats', err);
+            }
+        };
+
+        fetchStats();
     }, [user, router]);
 
     if (!user || !stats) return null;
@@ -119,11 +162,52 @@ function ProfileContent() {
 
                 {/* Content Tabs / Sections */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Detailed Progress - Placeholder for real chart */}
+                    {/* Detailed Progress - Real Chart */}
                     <div className="lg:col-span-2 bg-slate-900 border border-white/10 rounded-3xl p-8 shadow-xl">
                         <h2 className="text-2xl font-bold text-white mb-6">Gelişim Grafiği</h2>
-                        <div className="h-64 bg-slate-950 rounded-xl border border-white/5 flex items-center justify-center text-slate-500 italic">
-                            Grafik Verisi Yükleniyor... (Kütüphane Bağlantısı Bekleniyor)
+                        <div className="h-64 w-full">
+                            {chartData.length > 0 ? (
+                                <Line
+                                    data={{
+                                        labels: chartData.map(d => d.date),
+                                        datasets: [
+                                            {
+                                                label: 'Bireyselleşme Puanı',
+                                                data: chartData.map(d => d.score),
+                                                borderColor: 'rgb(59, 130, 246)',
+                                                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                                                tension: 0.3
+                                            }
+                                        ]
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: false
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true,
+                                                max: 100,
+                                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                                ticks: { color: '#94a3b8' }
+                                            },
+                                            x: {
+                                                grid: { display: false },
+                                                ticks: { color: '#94a3b8' }
+                                            }
+                                        }
+                                    }}
+                                />
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-500">
+                                    <p>Henüz yeterli veri yok.</p>
+                                    <span className="text-xs">Testleri çözdükçe burada gelişimini göreceksin.</span>
+                                </div>
+                            )}
                         </div>
                         <p className="mt-4 text-slate-400 text-sm">
                             * Bu grafik 6 haftalık süreçteki duygusal ve sosyal gelişimini takip eder.
