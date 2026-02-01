@@ -140,7 +140,7 @@ export const scenarios = [
         options: [
             { id: 'a', text: 'Bir şey demem.', icon: '🤐', independenceEffect: -20, feedback: 'Sorumluluk bilincini zayıflattın.' },
             { id: 'b', text: 'Yenisini onun harçlığıyla almasını isterim.', icon: '💰', independenceEffect: +25, feedback: 'Sorumluluk ve bireysel mülkiyet dersi.' },
-            { id: 'c', text: 'Ailme şikayet ederim.', icon: '👨‍👩‍👧', independenceEffect: -5, feedback: 'Sorunu kendin çözemedin.' }
+            { id: 'c', text: 'Ailemle konuşup sorunu çözmeyi öneririm.', icon: '👨‍👩‍👧', independenceEffect: -5, feedback: 'Sorunu kendin çözemedin.' }
         ]
     },
     {
