@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, Suspense } from 'react';
@@ -32,15 +33,34 @@ function WheelContent() {
   const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
+  // Added: Save Function
+  const saveActivity = async () => {
+    if (!selectedActivity) return;
+
+    const activityToSave = selectedActivity; // capture closure
+    setSelectedActivity(null); // Close modal immediately for UX
+
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await fetch('/api/task/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ task: activityToSave.name, score: 20 })
+        });
+      }
+    } catch (e) {
+      console.error("Activity Save Failed", e);
+    }
+  };
+
   const spinWheel = () => {
     if (spinning) return;
 
-    // Reset state
     setSelectedActivity(null);
     setShowConfetti(false);
     setSpinning(true);
 
-    // Calculate random rotation (min 5 spins + random segment)
     const randomOffset = Math.random() * 360;
     const newRotation = rotation + 1800 + randomOffset;
     setRotation(newRotation);
@@ -49,25 +69,21 @@ function WheelContent() {
       setSpinning(false);
       const normalizedRotation = newRotation % 360;
       const segmentSize = 360 / activities.length;
-      // Because the arrow is at top (-90deg visually or 0deg in CSS flow), we calculate index backwards
-      // Adjusted for the top arrow:
       const index = Math.floor((360 - (normalizedRotation % 360)) / segmentSize) % activities.length;
 
       setSelectedActivity(activities[index]);
       setShowConfetti(true);
-    }, 4000); // 4 seconds spin time matching transition
+    }, 4000);
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30 overflow-hidden relative">
-      {/* Background Ambience */}
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-slate-950 pointer-events-none" />
 
       {showConfetti && <Confetti numberOfPieces={200} recycle={false} colors={['#6366f1', '#ec4899', '#10b981']} />}
 
       <div className="relative z-10 container mx-auto px-4 py-20 flex flex-col items-center justify-center min-h-screen">
 
-        {/* Header */}
         <div className="text-center mb-12 space-y-4">
           <h1 className="text-4xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
             Günlük Odak Çarkı
@@ -78,23 +94,18 @@ function WheelContent() {
           </p>
         </div>
 
-        {/* Main Interaction Area */}
         <div className="relative flex flex-col items-center gap-10">
-
-          {/* Wheel Wrapper */}
           <div className="relative group">
-            {/* Indicator / Stopper */}
             <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
               <div className="w-12 h-12 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.5)] flex items-center justify-center border-4 border-slate-900">
                 <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[16px] border-t-blue-600 translate-y-1" />
               </div>
             </div>
 
-            {/* The Wheel */}
             <div className="relative p-2 rounded-full bg-slate-800/50 backdrop-blur-sm border border-white/10 shadow-2xl">
               <motion.div
                 animate={{ rotate: rotation }}
-                transition={{ duration: 4, ease: [0.15, 0, 0.2, 1] }} // Bezier for realistic slow down
+                transition={{ duration: 4, ease: [0.15, 0, 0.2, 1] }}
                 className="w-[320px] h-[320px] md:w-[450px] md:h-[450px] rounded-full relative overflow-hidden"
                 style={{
                   boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
@@ -103,7 +114,6 @@ function WheelContent() {
                   ).join(', ')})`
                 }}
               >
-                {/* Wheel Segments Content */}
                 {activities.map((item, i) => {
                   const angle = (360 / activities.length) * i + (360 / activities.length / 2);
                   return (
@@ -128,7 +138,6 @@ function WheelContent() {
                   )
                 })}
 
-                {/* Center Cap */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-slate-900 rounded-full border-4 border-slate-700 flex items-center justify-center shadow-2xl z-20">
                   <span className="text-2xl">🎯</span>
                 </div>
@@ -136,7 +145,6 @@ function WheelContent() {
             </div>
           </div>
 
-          {/* Action Button */}
           <div className="flex flex-col items-center gap-4 z-20">
             <button
               onClick={spinWheel}
@@ -161,7 +169,6 @@ function WheelContent() {
 
         </div>
 
-        {/* Result Modal / Overlay */}
         <AnimatePresence>
           {selectedActivity && !spinning && (
             <motion.div
@@ -175,7 +182,6 @@ function WheelContent() {
                 className="bg-slate-900 border border-white/10 p-8 rounded-3xl max-w-md w-full relative shadow-2xl overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Glow effect matching activity color */}
                 <div
                   className="absolute top-0 left-0 w-full h-2"
                   style={{ backgroundColor: selectedActivity.color }}
@@ -198,7 +204,7 @@ function WheelContent() {
 
                   <div className="pt-6 border-t border-white/10">
                     <button
-                      onClick={() => setSelectedActivity(null)}
+                      onClick={saveActivity}
                       className="w-full py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors"
                     >
                       Kabul Et
@@ -218,4 +224,4 @@ function WheelContent() {
       </div>
     </div>
   );
-} 
+}
