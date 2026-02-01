@@ -72,7 +72,6 @@ function HomeContent() {
 
         {/* Massive Hero Section */}
         <section className="text-center space-y-8 relative">
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-[100px] rounded-full -z-10 animate-pulse"></div>
 
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
