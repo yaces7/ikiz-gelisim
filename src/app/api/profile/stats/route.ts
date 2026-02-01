@@ -4,14 +4,17 @@ import dbConnect from '@/app/lib/dbConnect';
 import { Score, Interaction } from '@/app/lib/models/ResearchData';
 import jwt from 'jsonwebtoken';
 
-export const dynamic = 'force-dynamic'; // CRITICAL FIX for 404s
+// Ensure dynamic rendering to access headers/DB correctly
+export const dynamic = 'force-dynamic';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function GET(request: Request) {
     try {
+        // 1. Connect DB (Must succeed for real data)
         await dbConnect();
 
+        // 2. Auth Check
         const authHeader = request.headers.get('Authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,17 +25,24 @@ export async function GET(request: Request) {
         try {
             decoded = jwt.verify(token, JWT_SECRET);
         } catch (err) {
+            console.error("Token Error:", err);
             return NextResponse.json({ error: 'Invalid Token' }, { status: 401 });
         }
 
         const userId = decoded.id;
 
-        // Fetch Data
+        // 3. REAL Data Fetching
+        // --- Scores ---
         const scores = await Score.find({ user_id: userId });
 
-        // Calculate Totals / Radar Stats
+        // --- Interactions (Activity) ---
+        const interactions = await Interaction.find({ user_id: userId })
+            .sort({ timestamp: -1 })
+            .limit(10); // Increased limit as requested for "detailed" feed
+
+        // Process Data
         const radarStats: Record<string, number> = {
-            'Özerklik': 50,
+            'Özerklik': 50, // Base stats
             'Sınırlar': 50,
             'İletişim': 50,
             'Özgüven': 50,
@@ -48,44 +58,44 @@ export async function GET(request: Request) {
 
             if (s.test_type === 'GAME') {
                 gamesPlayed++;
-                // Add simple logic to boost stats based on game type
+                // Dynamic adjustments based on game performance
+                // Assuming rawScore is saved in metadata
+                const raw = s.sub_dimensions?.rawScore || 10;
                 const gid = s.sub_dimensions?.gameId;
-                if (gid === 'boundary') radarStats['Sınırlar'] += 5;
-                if (gid === 'diplomacy') radarStats['İletişim'] += 5;
-                if (gid === 'mirror') radarStats['Farkındalık'] += 5;
-                if (gid === 'social') radarStats['Özerklik'] += 5;
+
+                // Impact Logic
+                if (gid === 'boundary') radarStats['Sınırlar'] += (raw / 5);
+                if (gid === 'diplomacy') radarStats['İletişim'] += (raw / 5);
+                if (gid === 'mirror') radarStats['Farkındalık'] += (raw / 5);
+                if (gid === 'social') radarStats['Özerklik'] += (raw / 10);
             }
             else if (s.test_type === 'BSO') {
                 testsCompleted++;
+                // BSO Directly maps to Autonomy
                 radarStats['Özerklik'] = (radarStats['Özerklik'] + (s.total_score || 50)) / 2;
             }
         });
 
-        // Normalize Stats to 100
+        // Normalize Stats (0-100)
         Object.keys(radarStats).forEach(k => {
             radarStats[k] = Math.min(100, Math.max(0, radarStats[k]));
         });
 
-        // Fetch Recent Activity
-        const interactions = await Interaction.find({ user_id: userId })
-            .sort({ timestamp: -1 })
-            .limit(5);
-
         const recentActivities = interactions.map(i => ({
-            action: i.content || 'Aktivite',
+            action: i.content || 'Bilinmeyen Aktivite',
             timestamp: i.timestamp
         }));
 
-        // Level Calculation
+        // Level Calc
         const level = Math.floor(totalPoints / 500) + 1;
-        const nextLevelProgress = (totalPoints % 500) / 5;
+        const nextLevelProgress = (totalPoints % 500) / 5; // Percentage (500 pts = 100%)
 
         return NextResponse.json({
             user: {
                 level,
                 title: level > 5 ? 'Uzman' : 'Kâşif',
                 nextLevelProgress,
-                twinName: 'İkizim (Bağlanmadı)' // Placeholder for now
+                twinName: 'İkizim (Bağlanmadı)' // Need schema update for real twin name
             },
             stats: {
                 totalPoints,
@@ -97,8 +107,12 @@ export async function GET(request: Request) {
             recentActivities
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Profile Stats Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        // Return actual error to help debugging connection issues
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            details: error.message
+        }, { status: 500 });
     }
 }

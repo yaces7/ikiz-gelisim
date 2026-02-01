@@ -19,10 +19,11 @@ import { Radar } from 'react-chartjs-2';
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 export default function ProfilePage() {
-    const { user, login } = useAuth(); // Get login to potentially re-hydrate user if API succeeds
+    const { user, login } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [profileData, setProfileData] = useState<any>(null);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -42,14 +43,17 @@ export default function ProfilePage() {
                     const json = await res.json();
                     setProfileData(json);
                 } else {
-                    // If API returns 401, token is invalid
                     if (res.status === 401) {
                         localStorage.removeItem('token');
-                        // router.push('/giris'); 
+                        setErrorMsg("Oturum süreniz doldu. Lütfen tekrar giriş yapın.");
+                    } else {
+                        const err = await res.text(); // Get detailed error if possible
+                        setErrorMsg(`Veri alınamadı (Hata: ${res.status}): ${err.substring(0, 100)}`);
                     }
                 }
-            } catch (e) {
+            } catch (e: any) {
                 console.error(e);
+                setErrorMsg(`Bağlantı hatası: ${e.message}`);
             } finally {
                 setLoading(false);
             }
@@ -62,12 +66,36 @@ export default function ProfilePage() {
         return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white font-bold animate-pulse">Profil Yükleniyor...</div>;
     }
 
-    // If not logged in (no profile data loaded and no user in context)
+    // Error State Handling
+    if (errorMsg) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-4 text-center">
+                <div className="bg-red-500/10 border border-red-500/50 p-6 rounded-2xl max-w-md">
+                    <h2 className="text-xl font-bold text-red-400 mb-2">Bir Sorun Oluştu</h2>
+                    <p className="text-slate-300 mb-6">{errorMsg}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white font-bold transition mr-4"
+                    >
+                        Tekrar Dene
+                    </button>
+                    <button
+                        onClick={() => router.push('/giris')}
+                        className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-bold transition"
+                    >
+                        Giriş Yap
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // If not logged in (No token found initially)
     if (!profileData) {
         return (
             <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-4 text-center">
-                <h2 className="text-2xl font-bold mb-4">Oturum Açmanız Gerekiyor</h2>
-                <p className="text-slate-400 mb-8">Profilinizi görüntülemek için lütfen giriş yapın.</p>
+                <h2 className="text-2xl font-bold mb-4">Giriş Yapmalısınız</h2>
+                <p className="text-slate-400 mb-8">Profilinizi görüntülemek için oturum açın.</p>
                 <button
                     onClick={() => router.push('/giris')}
                     className="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition"
@@ -80,6 +108,7 @@ export default function ProfilePage() {
 
     const { user: levelInfo, stats, recentActivities } = profileData;
 
+    // ... (Chart Data & Render Logic remains the same)
     const radarChartData = {
         labels: stats.radarLabels || ['Özerklik', 'Sınırlar', 'İletişim', 'Özgüven', 'Farkındalık'],
         datasets: [{
@@ -98,7 +127,7 @@ export default function ProfilePage() {
             r: {
                 angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
                 grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                pointLabels: { color: '#94a3b8', font: { size: 12, weight: 'bold' as const } as any }, // Type cast workaround
+                pointLabels: { color: '#94a3b8', font: { size: 12, weight: 'bold' as const } as any },
                 ticks: { display: false, backdropColor: 'transparent' },
                 suggestedMin: 0,
                 suggestedMax: 100,
