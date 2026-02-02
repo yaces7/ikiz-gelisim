@@ -9,9 +9,9 @@ export const dynamic = 'force-dynamic';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 // app/api/profile/stats/route.ts
 export async function GET(request: Request) {
-    return NextResponse.json({ message: "Rota çalışıyor!" }); // Bunu ekleyip tarayıcıdan /api/profile/stats adresine git.
-export async function GET(request: Request) {
+    
     try {
+
         // --- 1. Auth Check ---
         const authHeader = request.headers.get('Authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -126,5 +126,6 @@ export async function GET(request: Request) {
     } catch (error: any) {
         console.error('Profile Stats Error:', error);
         return NextResponse.json({ error: 'Server Error', message: error.message }, { status: 500 });
+        return NextResponse.json({ message: "Rota çalışıyor!" });
     }
 }
