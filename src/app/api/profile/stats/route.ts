@@ -7,7 +7,9 @@ import jwt from 'jsonwebtoken';
 export const dynamic = 'force-dynamic';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
+// app/api/profile/stats/route.ts
+export async function GET(request: Request) {
+    return NextResponse.json({ message: "Rota çalışıyor!" }); // Bunu ekleyip tarayıcıdan /api/profile/stats adresine git.
 export async function GET(request: Request) {
     try {
         // --- 1. Auth Check ---
