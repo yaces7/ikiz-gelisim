@@ -1,0 +1,9 @@
+node_modules/
+backend/
+v2/
+*.py
+*.db
+analysis_engine.py
+database.js
+server.js
+twin_platform.db

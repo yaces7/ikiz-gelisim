@@ -1,0 +1,11 @@
+node_modules/
+backend/
+v2/
+.next/
+out/
+build/
+*.js
+*.py
+database.js
+server.js
+twin_platform.db
