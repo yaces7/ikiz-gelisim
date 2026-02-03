@@ -1,14 +1,19 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
-    id: number;
+    id: string;
     username: string;
-    fullName: string;
-    role: 'twin' | 'parent' | 'admin';
-    groupType: 'experiment' | 'control';
+    email?: string;
+    role: 'user' | 'twin' | 'parent' | 'researcher' | 'admin';
+    groupType?: 'experiment' | 'control';
+    level?: number;
+    total_points?: number;
+    current_week?: number;
+    completed_weeks?: number[];
 }
 
 interface AuthContextType {
@@ -16,6 +21,7 @@ interface AuthContextType {
     login: (token: string, user: User) => void;
     logout: () => void;
     isAuthenticated: boolean;
+    updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,8 +54,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push('/giris');
     };
 
+    const updateUser = (updates: Partial<User>) => {
+        if (user) {
+            const updatedUser = { ...user, ...updates };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

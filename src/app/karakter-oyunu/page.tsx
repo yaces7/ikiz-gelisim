@@ -137,8 +137,8 @@ function CharacterGameContent() {
                   key={index}
                   onClick={() => handleSelect('avatar', avatar)}
                   className={`text-4xl p-4 rounded-xl transition-all ${character.avatar === avatar
-                      ? 'bg-blue-600 scale-110 shadow-lg ring-2 ring-blue-400'
-                      : 'bg-slate-800 hover:bg-slate-700'
+                    ? 'bg-blue-600 scale-110 shadow-lg ring-2 ring-blue-400'
+                    : 'bg-slate-800 hover:bg-slate-700'
                     }`}
                 >
                   {avatar}
@@ -174,8 +174,8 @@ function CharacterGameContent() {
                     key={index}
                     onClick={() => handleSelect(config.key, item)}
                     className={`p-3 rounded-lg text-sm font-bold transition-all text-left ${isSelected
-                        ? 'bg-blue-600 text-white shadow-lg'
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                       }`}
                   >
                     {item}
@@ -257,9 +257,30 @@ function CharacterGameContent() {
             >
               Yeni Oluştur
             </button>
-            <Link href="/" className="px-6 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 transition shadow-lg">
-              Maceraya Başla
-            </Link>
+            <button
+              onClick={async () => {
+                try {
+                  const token = localStorage.getItem('token');
+                  await fetch('/api/character/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                      name: character.name,
+                      appearance: { emoji: character.avatar },
+                      values: [...character.personality, ...character.strengths],
+                      goals: [...character.dreams, ...character.hobbies]
+                    })
+                  });
+                  window.location.href = '/profil';
+                } catch (e) {
+                  console.error(e);
+                  window.location.href = '/profil';
+                }
+              }}
+              className="px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90 transition shadow-lg"
+            >
+              🚀 Maceraya Başla
+            </button>
           </div>
         </motion.div>
       </div>
@@ -302,8 +323,8 @@ function CharacterGameContent() {
               onClick={nextStep}
               disabled={!canProceed()}
               className={`px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform ${canProceed()
-                  ? 'bg-blue-600 text-white hover:bg-blue-500 hover:scale-105'
-                  : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                ? 'bg-blue-600 text-white hover:bg-blue-500 hover:scale-105'
+                : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                 }`}
             >
               {step === 6 ? 'Tamamla' : 'İlerle'}

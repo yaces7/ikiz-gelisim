@@ -112,7 +112,7 @@ const NavbarContent = () => {
                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-slate-800 text-white border border-slate-700 hover:bg-slate-700 transition"
                   >
                     <span className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-xs">
-                      {user.fullName?.[0]?.toUpperCase() || 'U'}
+                      {user.username?.[0]?.toUpperCase() || 'U'}
                     </span>
                     Profilim
                   </motion.button>

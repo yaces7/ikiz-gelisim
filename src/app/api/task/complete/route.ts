@@ -26,17 +26,24 @@ export async function POST(request: Request) {
         await Interaction.create({
             user_id: userId,
             action_type: 'task_complete',
-            content: `Görev: ${task}`,
+            content: `Çarkıfelek Görevi: ${task}`,
             impact_score: score || 0,
             timestamp: new Date()
         });
 
-        // 2. Update User XP
+        // 2. Add to wheelTasks and update XP
         await User.findByIdAndUpdate(userId, {
-            $inc: { total_points: score || 0 }
+            $inc: { total_points: score || 15 },
+            $push: {
+                wheelTasks: {
+                    task: task,
+                    completed: false,
+                    addedAt: new Date()
+                }
+            }
         });
 
-        return NextResponse.json({ success: true, points: score });
+        return NextResponse.json({ success: true, points: score || 15 });
 
     } catch (error) {
         console.error("Task Complete Error", error);
