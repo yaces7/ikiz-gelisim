@@ -17,39 +17,45 @@ const characterRoutes = require('./routes/character');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 1. CORS - MUST BE AT THE VERY TOP
-app.use(cors()); // Allow all origins, all methods, all headers by default
-app.options('*', cors()); // Enable pre-flight across-the-board
+// 1. CORS - MUST BE FIRST
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Access-Control-Allow-Origin']
+}));
 
-// 2. HELMET & MORGAN
+// 2. MIDDLEWARES
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan('dev'));
 app.use(express.json());
 
-// MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ikiz-gelisim';
+// Log Request Details (For Debugging)
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
 
-mongoose.connect(MONGODB_URI, {
-    maxPoolSize: 10,
-    serverSelectionTimeoutMS: 5000
-})
-    .then(() => console.log('✅ MongoDB Connected'))
-    .catch(err => console.error('❌ MongoDB Error:', err.message));
+// 3. DATABASE
+const MONGODB_URI = process.env.MONGODB_URI;
 
-// Health Check
+if (!MONGODB_URI) {
+    console.error('❌ CRITICAL: MONGODB_URI is not defined in environment variables!');
+} else {
+    mongoose.connect(MONGODB_URI)
+        .then(() => console.log('✅ MongoDB Connected'))
+        .catch(err => console.error('❌ MongoDB Error:', err.message));
+}
+
+// 4. ROUTES
 app.get('/', (req, res) => {
-    res.json({
-        status: 'OK',
-        message: 'İkiz Gelişim API',
-        timestamp: new Date().toISOString()
-    });
+    res.json({ status: 'OK', message: 'İkiz Gelişim API Çalışıyor', timestamp: new Date().toISOString() });
 });
 
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.json({ status: 'OK', env: process.env.NODE_ENV });
 });
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/journal', journalRoutes);
@@ -58,17 +64,18 @@ app.use('/api/game', gameRoutes);
 app.use('/api/task', taskRoutes);
 app.use('/api/character', characterRoutes);
 
-// 404 Handler
+// 5. 404 HANDLER (with CORS)
 app.use((req, res) => {
-    res.status(404).json({ error: 'Route not found' });
+    console.warn(`404 - Not Found: ${req.method} ${req.url}`);
+    res.status(404).json({ error: `Path ${req.url} not found` });
 });
 
-// Error Handler
+// 6. ERROR HANDLER (with CORS)
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('SERVER ERROR:', err);
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 API Server ready on port ${PORT}`);
 });
