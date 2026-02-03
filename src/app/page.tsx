@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { weeksContent } from './data/topicContent';
 import { useAuth } from './context/AuthContext';
+import Link from 'next/link';
 
 // Dynamic imports with specific loading behavior
 const ParticleBackground = dynamic(() => import('./components/ParticleBackground'), {
@@ -78,37 +79,36 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
 
           {/* HERO SECTION */}
-          {/* Padding top adjusted to account for fixed navbar (approx 80px) + visual spacing */}
-          <section className="min-h-[90vh] flex flex-col items-center justify-center text-center pt-20">
+          <section className="min-h-[80vh] md:min-h-[90vh] flex flex-col items-center justify-center text-center pt-24 md:pt-20">
 
-            <div className="space-y-8 animate-in fade-in zoom-in duration-700">
-              <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tight text-white drop-shadow-2xl">
+            <div className="space-y-6 md:space-y-8 animate-in fade-in zoom-in duration-700">
+              <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-extrabold tracking-tight text-white drop-shadow-2xl">
                 İKİZ<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
                   GELİŞİM
                 </span>
               </h1>
 
-              <p className="max-w-3xl mx-auto text-xl md:text-3xl text-slate-300 font-light leading-relaxed">
+              <p className="max-w-3xl mx-auto text-lg sm:text-xl md:text-3xl text-slate-300 font-light leading-relaxed px-4">
                 Yapay zeka destekli, kişiselleştirilmiş <br className="hidden md:block" />
                 <span className="font-semibold text-white">bireyselleşme ve gelişim platformu</span>.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 px-6">
                 <a
                   href="#modules"
-                  className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-blue-500/25 transform hover:-translate-y-1"
+                  className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-blue-500/25 transform hover:-translate-y-1"
                 >
                   Keşfetmeye Başla
                 </a>
-                <LinkButton href="/kayit" variant="outline">
-                  Kayıt Ol / Giriş Yap
-                </LinkButton>
+                <Link href="/kayit" className="w-full sm:w-auto px-8 py-4 bg-transparent border-2 border-slate-700 hover:border-slate-500 text-white rounded-xl font-bold text-lg transition-all hover:bg-slate-800/50 flex items-center justify-center">
+                  Kayıt Ol
+                </Link>
               </div>
             </div>
 
             {/* Scroll Indicator */}
-            <div className="absolute bottom-10 animate-bounce text-slate-500">
+            <div className="absolute bottom-6 md:bottom-10 animate-bounce text-slate-500 hidden sm:block">
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
@@ -116,8 +116,8 @@ export default function Home() {
           </section>
 
           {/* MAIN MODULES GRID */}
-          <div id="modules" className="py-20 scroll-mt-24">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+          <div id="modules" className="py-12 md:py-20 scroll-mt-24">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
               <div className="bg-slate-900/50 backdrop-blur-sm p-1 rounded-3xl border border-white/10 hover:border-blue-500/50 transition-colors">
                 <ChoiceEngine />
               </div>
@@ -128,12 +128,12 @@ export default function Home() {
           </div>
 
           {/* WEEKLY PROGRAM (TOPICS) */}
-          <section className="py-20">
-            <div className="text-center mb-16 space-y-4">
-              <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                6 Haftalık Gelişim Programı
+          <section className="py-12 md:py-20">
+            <div className="text-center mb-10 md:mb-16 space-y-3 md:space-y-4 px-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                6 Haftalık Program
               </h2>
-              <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto">
                 Adım adım ilerleyen, bilimsel temelli gelişim modülleri.
               </p>
             </div>
