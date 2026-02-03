@@ -2,6 +2,8 @@
 
 import { useState, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { scenarios } from '../data/scenarios';
+import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import Confetti from 'react-confetti';
@@ -260,16 +262,11 @@ function CharacterGameContent() {
             <button
               onClick={async () => {
                 try {
-                  const token = localStorage.getItem('token');
-                  await fetch('/api/character/save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({
-                      name: character.name,
-                      appearance: { emoji: character.avatar },
-                      values: [...character.personality, ...character.strengths],
-                      goals: [...character.dreams, ...character.hobbies]
-                    })
+                  await api.post('/api/character/save', {
+                    name: character.name,
+                    appearance: { emoji: character.avatar },
+                    values: [...character.personality, ...character.strengths],
+                    goals: [...character.dreams, ...character.hobbies]
                   });
                   window.location.href = '/profil';
                 } catch (e) {

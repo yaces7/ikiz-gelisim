@@ -9,6 +9,7 @@ import { encryptData } from '../lib/security';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import { scenarios } from '../data/scenarios';
+import api from '../lib/api';
 
 let socket: any;
 
@@ -30,7 +31,8 @@ export default function ChoiceEngine() {
         if (typeof window !== 'undefined') {
             setWindowSize({ width: window.innerWidth, height: window.innerHeight });
         }
-        socket = io();
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+        socket = io(API_URL);
         return () => { if (socket) socket.disconnect(); }
     }, []);
 
@@ -51,25 +53,15 @@ export default function ChoiceEngine() {
 
         // Save to Database (Simulation Interaction)
         try {
-            const token = localStorage.getItem('token');
-            if (token) {
-                await fetch('/api/game/save', { // Re-using game save endpoint for simplicity
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        gameId: 'simulation_choice',
-                        score: option.independenceEffect,
-                        maxScore: 30, // Max delta
-                        metadata: { scenarioId: activeScenario.id, choiceId: option.id }
-                    })
-                });
-            }
-        } catch (e) { console.error("Sim Save Error", e); }
-
-        setTimeout(() => {
+            await api.post('/api/game/save', {
+                scenarioId: activeScenario.id,
+                choiceWeight: option.weight,
+                autonomy: option.autonomy,
+                dependency: option.dependency
+            });
+        } catch (err) {
+            console.error('Save failed', err);
+        } setTimeout(() => {
             setLastChoice(option);
             const newScore = Math.min(100, Math.max(0, independenceScore + option.independenceEffect));
             setIndependenceScore(newScore);

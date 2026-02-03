@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import Confetti from 'react-confetti';
 import { weeklyTests as tests } from '../data/testQuestions';
+import api from '../lib/api';
 
 export default function TestsPage() {
   return (
@@ -30,22 +31,17 @@ function TestInterface() {
   useEffect(() => {
     const fetchHistory = async () => {
       if (!user) return;
-      const token = localStorage.getItem('token');
-      if (!token) return;
       try {
-        const res = await fetch('/api/test/history', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setCompletedWeeks(data.completedWeeks);
-          // Also restore scores map
-          const scoreMap: Record<string, number> = {};
+        const data = await api.get('/api/test/history');
+        setCompletedWeeks(data.completedWeeks || []);
+        // Also restore scores map
+        const scoreMap: Record<string, number> = {};
+        if (data.history) {
           data.history.forEach((h: any) => {
             scoreMap[h.weekId] = h.score;
           });
-          setScores(scoreMap);
         }
+        setScores(scoreMap);
       } catch (e) {
         console.error("Failed to load test history", e);
       }
@@ -111,21 +107,11 @@ function TestInterface() {
     setAnimating(false);
 
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        await fetch('/api/test/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            weekId,
-            score: finalScore,
-            answers: answersLog
-          })
-        });
-      }
+      await api.post('/api/test/save', {
+        weekId,
+        score: finalScore,
+        answers: answersLog
+      });
     } catch (err) {
       console.error('Save failed', err);
     }
@@ -256,10 +242,10 @@ function TestInterface() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className={`relative rounded-3xl p-8 border hover:scale-[1.02] transition-all duration-300 ${isLocked
-                    ? 'bg-slate-900/50 border-white/5 opacity-50 cursor-not-allowed'
-                    : isCompleted
-                      ? 'bg-slate-900 border-green-500/30 shadow-green-900/10'
-                      : 'bg-slate-900 border-white/10 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-900/20'
+                  ? 'bg-slate-900/50 border-white/5 opacity-50 cursor-not-allowed'
+                  : isCompleted
+                    ? 'bg-slate-900 border-green-500/30 shadow-green-900/10'
+                    : 'bg-slate-900 border-white/10 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-900/20'
                   }`}
                 onClick={() => !isLocked && handleStartWeek(test.id)}
               >
@@ -291,10 +277,10 @@ function TestInterface() {
                 <button
                   disabled={isLocked}
                   className={`w-full py-3 rounded-xl font-bold transition-all ${isLocked
-                      ? 'bg-white/5 text-slate-500'
-                      : isCompleted
-                        ? 'bg-white/5 text-white hover:bg-white/10'
-                        : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20'
+                    ? 'bg-white/5 text-slate-500'
+                    : isCompleted
+                      ? 'bg-white/5 text-white hover:bg-white/10'
+                      : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20'
                     }`}
                 >
                   {isLocked ? 'Önceki Haftayı Tamamla' : isCompleted ? 'Tekrar Çöz' : 'Başla'}

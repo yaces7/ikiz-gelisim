@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import Confetti from 'react-confetti';
+import api from '../lib/api';
 
 // Categories for Todo List
 type Category = 'bireysel' | 'sosyal' | 'akademik';
@@ -51,15 +52,8 @@ export default function ActivitiesPage() {
 
   const saveTaskCompletion = async (taskText: string, xp: number) => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        await fetch('/api/task/complete', { // Re-using task completion endpoint
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ task: taskText, score: xp })
-        });
-      }
-    } catch (e) { console.error(e); }
+      await api.post('/api/task/complete', { task: taskText, score: xp });
+    } catch (e) { console.error("Task Save Error", e); }
   };
 
   const filteredTasks = filter === 'all' ? tasks : tasks.filter(t => t.category === filter);
@@ -102,8 +96,8 @@ export default function ActivitiesPage() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-6 py-2 rounded-xl font-bold capitalize transition-all whitespace-nowrap ${filter === f
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                  : 'bg-slate-900 text-slate-500 hover:bg-slate-800 hover:text-white'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                : 'bg-slate-900 text-slate-500 hover:bg-slate-800 hover:text-white'
                 }`}
             >
               {f === 'all' ? 'Tümü' : f}
@@ -150,7 +144,7 @@ export default function ActivitiesPage() {
                       {task.text}
                     </p>
                     <span className={`text-xs px-2 py-1 rounded-md bg-slate-800 ${task.category === 'bireysel' ? 'text-blue-400' :
-                        task.category === 'sosyal' ? 'text-purple-400' : 'text-orange-400'
+                      task.category === 'sosyal' ? 'text-purple-400' : 'text-orange-400'
                       }`}>
                       {task.category.toUpperCase()}
                     </span>

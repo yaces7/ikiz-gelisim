@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import api from '../lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,22 +29,10 @@ export default function RegisterPage() {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
-      const res = await fetch(`${API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setTimeout(() => router.push('/giris'), 1000);
-      } else {
-        alert(data.error || 'Kayıt başarısız');
-        setLoading(false);
-      }
-    } catch (e) {
-      console.error(e);
+      await api.post('/api/auth/register', formData);
+      setTimeout(() => router.push('/giris'), 1000);
+    } catch (e: any) {
+      alert(e.message || 'Kayıt başarısız');
       setLoading(false);
     }
   };

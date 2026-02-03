@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { weeksContent } from './data/topicContent';
 import { useAuth } from './context/AuthContext';
 import Link from 'next/link';
+import api from './lib/api';
 
 // Dynamic imports with specific loading behavior
 const ParticleBackground = dynamic(() => import('./components/ParticleBackground'), {
@@ -42,11 +43,7 @@ export default function Home() {
 
   useEffect(() => {
     if (user?.id) {
-      fetch('/api/progression/check', {
-        method: 'POST',
-        body: JSON.stringify({ userId: user.id })
-      })
-        .then(res => res.json())
+      api.post('/api/progression/check', { userId: user.id })
         .then(data => {
           if (data.success) setProgressionWeek(data.week);
         })
@@ -131,7 +128,7 @@ export default function Home() {
           <section className="py-12 md:py-20">
             <div className="text-center mb-10 md:mb-16 space-y-3 md:space-y-4 px-4">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                6 Haftalık Program
+                6 Haftalık Gelişim Programı
               </h2>
               <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto">
                 Adım adım ilerleyen, bilimsel temelli gelişim modülleri.

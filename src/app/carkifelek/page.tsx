@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import Confetti from 'react-confetti';
+import api from '../lib/api';
 
 const activities = [
   { name: 'Bireysel Zaman', color: '#6366f1', icon: '🧘', desc: 'Kendinle baş başa kal. Kitap oku, müzik dinle veya sadece dinlen.' },
@@ -41,14 +42,7 @@ function WheelContent() {
     setSelectedActivity(null); // Close modal immediately for UX
 
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        await fetch('/api/task/complete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ task: activityToSave.name, score: 20 })
-        });
-      }
+      await api.post('/api/profile/complete-task', { taskIndex: activities.indexOf(activityToSave) });
     } catch (e) {
       console.error("Activity Save Failed", e);
     }

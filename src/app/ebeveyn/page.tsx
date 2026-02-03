@@ -6,6 +6,7 @@ import { Line } from 'react-chartjs-2';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import api from '../lib/api';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -44,24 +45,10 @@ export default function ParentDashboard() {
       }
 
       try {
-        const res = await fetch('/api/parent/dashboard', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          setDashboardData(data.data);
-        } else {
-          setError(data.error || 'Veri alınamadı');
-        }
+        const data = await api.get('/api/parent/dashboard');
+        setDashboardData(data.data);
       } catch (err: any) {
-        console.error("Dashboard fetch error:", err);
-        setError(err.message);
+        setError(err.message || 'Veri alınamadı');
       } finally {
         setLoading(false);
       }

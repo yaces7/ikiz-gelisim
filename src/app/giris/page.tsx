@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import dynamic from 'next/dynamic';
+import api from '../lib/api';
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 // Mock Lottie JSON (In real app, import from file)
@@ -33,22 +34,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
-      const res = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        login(data.token, data.user);
-      } else {
-        setError(data.error || 'Giriş başarısız');
-        setLoading(false);
-      }
-    } catch (err) {
-      setError('Sunucu hatası.');
+      const data = await api.post('/api/auth/login', { username, password });
+      login(data.token, data.user);
+    } catch (err: any) {
+      setError(err.message || 'Giriş başarısız');
       setLoading(false);
     }
   };

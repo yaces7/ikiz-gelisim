@@ -11,6 +11,7 @@ import dynamic from 'next/dynamic';
 const ReflexGame = dynamic(() => import('../components/games/ReflexGame'), { ssr: false });
 const ChatGame = dynamic(() => import('../components/games/ChatGame'), { ssr: false });
 const ChoiceEngine = dynamic(() => import('../components/ChoiceEngine'), { ssr: false });
+import api from '../lib/api';
 
 // --- GAME CONFIG ---
 const GAMES_DATA: Record<string, { title: string, subtitle: string, instruction: string, icon: string, color: string, type: 'swipe' | 'reflex' | 'chat' | 'choice' }> = {
@@ -118,15 +119,8 @@ function GamesContent() {
 
   const saveScore = async (gameId: string, score: number) => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        await fetch('/api/game/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ gameId, score, maxScore: 100 })
-        });
-      }
-    } catch (e) { console.error(e); }
+      await api.post('/api/game/save', { gameId, score, maxScore: 100 });
+    } catch (e) { console.error("Game Save Error", e); }
   };
 
   if (!user) {

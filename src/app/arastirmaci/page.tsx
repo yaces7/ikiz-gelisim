@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
+import api from '../lib/api';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -65,11 +66,8 @@ export default function ResearcherDashboard() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await fetch('/api/admin/dashboard-stats');
-                const data = await res.json();
-                if (data.success) {
-                    setStats(data.stats);
-                }
+                const data = await api.get('/api/admin/dashboard-stats');
+                setStats(data.stats);
             } catch (error) {
                 console.error('Error fetching stats:', error);
             } finally {
