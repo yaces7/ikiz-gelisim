@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
+import api from '../lib/api';
 import {
     Chart as ChartJS,
     RadialLinearScale,
@@ -40,28 +41,16 @@ export default function ProfilePage() {
             return;
         }
 
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
-
         try {
             // Profil verileri
-            const profileRes = await fetch(`${API_URL}/api/profile/stats`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (profileRes.ok) {
-                const json = await profileRes.json();
-                setProfileData(json);
-                setWheelTasks(json.wheelTasks || []);
-                setCharacter(json.character || null);
-            }
+            const json = await api.get('/api/profile/stats');
+            setProfileData(json);
+            setWheelTasks(json.wheelTasks || []);
+            setCharacter(json.character || null);
 
             // Günlük içgörüleri
-            const insightsRes = await fetch(`${API_URL}/api/journal/insights`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (insightsRes.ok) {
-                const insightsData = await insightsRes.json();
-                setJournalInsights(insightsData);
-            }
+            const insightsData = await api.get('/api/journal/insights');
+            setJournalInsights(insightsData);
         } catch (e: any) {
             console.error(e);
             setErrorMsg('Veri alınamadı');

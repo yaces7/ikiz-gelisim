@@ -31,8 +31,8 @@ export default function ChoiceEngine() {
         if (typeof window !== 'undefined') {
             setWindowSize({ width: window.innerWidth, height: window.innerHeight });
         }
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
-        socket = io(API_URL);
+        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ikiz-gelisim-api.onrender.com';
+        socket = io(BACKEND_URL);
         return () => { if (socket) socket.disconnect(); }
     }, []);
 
