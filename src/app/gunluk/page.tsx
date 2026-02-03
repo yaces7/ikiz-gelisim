@@ -28,13 +28,21 @@ const GUIDED_QUESTIONS: Record<number, string[]> = {
     6: ['Bu hafta en çok ne öğrendim?', 'Gelecekte nasıl bir birey olmak istiyorum?', 'İkizimle ilişkim nasıl değişti?']
 };
 
+
 interface PastEntry {
     _id: string;
     date: string;
     mood: string;
+    moodLabel?: string;
     preview: string;
+    summary?: string;
     sentiment: string;
+    sentimentScore?: number;
     themes: string[];
+    insights?: string[];
+    meRatio?: number;
+    week?: number;
+    analyzedBy?: string;
 }
 
 export default function JournalPage() {
@@ -177,8 +185,8 @@ function JournalContent() {
                                                     key={mood.label}
                                                     onClick={() => setSelectedMood(mood)}
                                                     className={`p-3 rounded-xl flex flex-col items-center gap-1 transition-all ${selectedMood?.label === mood.label
-                                                            ? `bg-gradient-to-br ${mood.color} text-white scale-105 shadow-lg`
-                                                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                                        ? `bg-gradient-to-br ${mood.color} text-white scale-105 shadow-lg`
+                                                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                                                         }`}
                                                 >
                                                     <span className="text-2xl">{mood.icon}</span>
@@ -219,8 +227,8 @@ function JournalContent() {
                                             onClick={analyzeEntry}
                                             disabled={analyzing || entry.length < 20 || !selectedMood}
                                             className={`w-full mt-4 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${analyzing || entry.length < 20 || !selectedMood
-                                                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                                                    : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90 shadow-lg'
+                                                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                                                : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90 shadow-lg'
                                                 }`}
                                         >
                                             {analyzing ? (
@@ -276,20 +284,50 @@ function JournalContent() {
                                             </div>
                                         </div>
 
+
                                         <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 p-4 rounded-xl">
                                             <h4 className="text-xs font-bold text-purple-400 uppercase mb-2">🧠 AI Yorumu</h4>
                                             <p className="text-slate-300 text-sm italic">"{analysis.feedback}"</p>
                                         </div>
+
+                                        {/* AI Özet */}
+                                        {analysis.summary && (
+                                            <div className="md:col-span-2 bg-slate-950/50 p-4 rounded-xl border border-white/5">
+                                                <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">📝 Özet</h4>
+                                                <p className="text-slate-300 text-sm">{analysis.summary}</p>
+                                            </div>
+                                        )}
+
+                                        {/* İçgörüler */}
+                                        {analysis.insights && analysis.insights.length > 0 && (
+                                            <div className="md:col-span-2 bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
+                                                <h4 className="text-xs font-bold text-blue-400 uppercase mb-2">💡 İçgörüler</h4>
+                                                <ul className="space-y-1">
+                                                    {analysis.insights.map((insight: string, i: number) => (
+                                                        <li key={i} className="text-slate-300 text-sm flex items-start gap-2">
+                                                            <span className="text-blue-400">•</span> {insight}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="mt-6 pt-4 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                                        <p className="text-green-400 text-sm font-bold">✓ Kaydedildi (+10 XP)</p>
+                                        <div className="flex items-center gap-3">
+                                            <p className="text-green-400 text-sm font-bold">✓ Kaydedildi (+10 XP)</p>
+                                            {analysis.analyzedBy && (
+                                                <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded">
+                                                    {analysis.analyzedBy === 'AI' ? '🤖 AI Analizi' : '📊 Sistem Analizi'}
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="flex gap-2">
                                             <button onClick={resetForm} className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-700">
                                                 Yeni Yazı
                                             </button>
                                             <button onClick={() => router.push('/profil')} className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-bold hover:bg-purple-500">
-                                                İçgörüleri Gör
+                                                Haftalık Özet
                                             </button>
                                         </div>
                                     </div>
@@ -333,8 +371,8 @@ function JournalContent() {
                                                             })}
                                                         </span>
                                                         <span className={`text-[10px] px-1.5 py-0.5 rounded ${entry.sentiment === 'Pozitif' ? 'bg-green-500/20 text-green-400' :
-                                                                entry.sentiment === 'Negatif' ? 'bg-red-500/20 text-red-400' :
-                                                                    'bg-slate-700 text-slate-400'
+                                                            entry.sentiment === 'Negatif' ? 'bg-red-500/20 text-red-400' :
+                                                                'bg-slate-700 text-slate-400'
                                                             }`}>
                                                             {entry.sentiment}
                                                         </span>
@@ -425,8 +463,8 @@ function JournalContent() {
                                         })}
                                     </p>
                                     <p className={`text-sm ${selectedEntry.sentiment === 'Pozitif' ? 'text-green-400' :
-                                            selectedEntry.sentiment === 'Negatif' ? 'text-red-400' :
-                                                'text-slate-400'
+                                        selectedEntry.sentiment === 'Negatif' ? 'text-red-400' :
+                                            'text-slate-400'
                                         }`}>
                                         {selectedEntry.sentiment}
                                     </p>
