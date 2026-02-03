@@ -86,8 +86,11 @@ git push origin main
 |-----|-------|
 | `MONGODB_URI` | `mongodb+srv://ikiz_admin:SIFRENIZ@ikiz-gelisim-cluster.xxxxx.mongodb.net/ikiz-gelisim?retryWrites=true&w=majority` |
 | `JWT_SECRET` | `ikiz-gelisim-super-secret-key-2024-tubitak` |
+| `GROQ_API_KEY` | `gsk_xxxxxxxxxxxx` (AI analizi için - [console.groq.com](https://console.groq.com)'dan alın) |
 | `PORT` | `5000` |
 | `NODE_ENV` | `production` |
+
+> 💡 **GROQ_API_KEY**: Günlük yazılarının AI ile analiz edilmesi için gerekli. Ücretsiz tier yeterli.
 
 ### 2.5 Deploy
 
