@@ -214,17 +214,17 @@ export default function ProfilePage() {
                 </motion.div>
 
                 {/* Tabs */}
-                <div className="flex justify-center gap-2 flex-wrap">
+                <div className="flex flex-wrap justify-center gap-2 md:gap-4 p-1">
                     {[
                         { id: 'overview', label: 'Genel', icon: '📊' },
-                        { id: 'journal', label: 'Günlük Özeti', icon: '📝' },
-                        { id: 'tasks', label: 'Çarkıfelek Görevleri', icon: '🎯' },
-                        { id: 'character', label: 'Karakterim', icon: '🦸' }
+                        { id: 'journal', label: 'Günlük', icon: '📝' },
+                        { id: 'tasks', label: 'Görevler', icon: '🎯' },
+                        { id: 'character', label: 'Karakter', icon: '🦸' }
                     ].map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={`px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 transition-all ${activeTab === tab.id
+                            className={`flex-1 md:flex-initial min-w-[120px] px-4 py-3 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 transition-all ${activeTab === tab.id
                                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
                                 : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                                 }`}

@@ -220,53 +220,88 @@ export default function Home() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-4xl max-h-[85vh] overflow-y-auto bg-slate-900 rounded-3xl border border-white/10 shadow-2xl"
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 rounded-2xl md:rounded-3xl border border-white/10 shadow-2xl"
             >
               {/* Close Button */}
               <button
                 onClick={() => setSelectedTopicId(null)}
-                className="absolute top-4 right-4 z-20 p-2 bg-black/50 hover:bg-red-500/80 rounded-full text-white transition-colors backdrop-blur-sm"
+                className="absolute top-4 right-4 z-30 p-2 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors backdrop-blur-md"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
 
               {/* Modal Hero Image */}
-              <div className="relative h-64 md:h-80 w-full shrink-0">
+              <div className="relative h-48 md:h-80 w-full shrink-0">
                 <Image
                   src={topicImages[selectedTopic.id]}
                   alt={topicAlts[selectedTopic.id]}
                   fill
                   className="object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent" />
-                <div className="absolute bottom-6 left-6 md:left-10 right-6">
-                  <span className="inline-block px-3 py-1 bg-blue-600 rounded-md text-xs font-bold text-white uppercase tracking-wider mb-2">
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent" />
+                <div className="absolute bottom-4 left-4 md:bottom-8 md:left-10 right-6">
+                  <span className="inline-block px-3 py-1 bg-blue-600 rounded-md text-[10px] md:text-xs font-bold text-white uppercase tracking-wider mb-2">
                     Hafta {selectedTopic.week}
                   </span>
-                  <h2 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg">
+                  <h2 className="text-2xl md:text-5xl font-bold text-white drop-shadow-lg">
                     {selectedTopic.title}
                   </h2>
                 </div>
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 md:p-10">
-                <div className="prose prose-lg prose-invert max-w-none">
-                  {selectedTopic.content.split('\n').map((paragraph, idx) => (
-                    <p key={idx} className="text-slate-300 leading-relaxed mb-4">
-                      {paragraph}
-                    </p>
-                  ))}
+              <div className="p-6 md:p-10 space-y-8">
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold text-blue-400 uppercase tracking-[0.2em]">Haftanın Amacı</h4>
+                  <p className="text-slate-200 text-base md:text-xl leading-relaxed">
+                    {selectedTopic.description}
+                  </p>
                 </div>
 
-                <div className="mt-10 pt-6 border-t border-slate-800 flex justify-end">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Etkinlikler */}
+                  <div className="space-y-6">
+                    <h4 className="flex items-center gap-2 text-sm font-bold text-purple-400 uppercase tracking-widest">
+                      <span className="p-1.5 bg-purple-500/10 rounded-lg">✨</span>
+                      Önerilen Etkinlikler
+                    </h4>
+                    <ul className="space-y-4">
+                      {selectedTopic.activities.map((act, i) => (
+                        <li key={i} className="flex items-start gap-3 group">
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0 group-hover:scale-125 transition-transform" />
+                          <span className="text-slate-300 text-sm md:text-base">{act}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Ebeveyn İpucu */}
+                  <div className="space-y-4">
+                    <h4 className="flex items-center gap-2 text-sm font-bold text-green-400 uppercase tracking-widest">
+                      <span className="p-1.5 bg-green-500/10 rounded-lg">👨‍👩‍👧</span>
+                      Ebeveyn Notu
+                    </h4>
+                    <div className="bg-slate-800/50 rounded-2xl p-5 border border-white/5 italic text-slate-400 text-sm md:text-base leading-relaxed">
+                      "{selectedTopic.parentTip}"
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row gap-4">
+                  <Link
+                    href={`/oyunlar`}
+                    onClick={() => setSelectedTopicId(null)}
+                    className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl text-center font-bold text-white shadow-xl shadow-blue-900/20 hover:opacity-90 transition-all"
+                  >
+                    Oyun Alanına Git
+                  </Link>
                   <button
                     onClick={() => setSelectedTopicId(null)}
-                    className="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                    className="flex-1 py-4 bg-slate-800 rounded-xl text-center font-bold text-slate-300 hover:bg-slate-700 transition-all"
                   >
-                    Tamamla ve Kapat
+                    Kapat
                   </button>
                 </div>
               </div>

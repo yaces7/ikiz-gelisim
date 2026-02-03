@@ -179,7 +179,7 @@ function JournalContent() {
                                     {/* Mood Selector */}
                                     <div className="bg-slate-900 border border-white/10 rounded-2xl p-6">
                                         <h3 className="text-lg font-bold text-white mb-4">Bugün Nasıl Hissediyorsun?</h3>
-                                        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                                             {MOOD_OPTIONS.map((mood) => (
                                                 <button
                                                     key={mood.label}
