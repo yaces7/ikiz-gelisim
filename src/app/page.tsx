@@ -39,9 +39,15 @@ const topicAlts: Record<string, string> = {
 export default function Home() {
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [progressionWeek, setProgressionWeek] = useState(1);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const { user } = useAuth();
 
   useEffect(() => {
+    // Check API Status
+    api.get('/ping')
+      .then(() => setApiStatus('online'))
+      .catch(() => setApiStatus('offline'));
+
     if (user?.id) {
       api.post('/api/progression/check', { userId: user.id })
         .then(data => {
@@ -55,6 +61,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30">
+
+      {/* API Status Indicator (Floating) */}
+      <div className="fixed bottom-4 right-4 z-[100] flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 backdrop-blur border border-white/10 rounded-full text-[10px] font-bold">
+        <div className={`w-2 h-2 rounded-full ${apiStatus === 'online' ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : apiStatus === 'offline' ? 'bg-red-500 shadow-[0_0_8px_#ef4444]' : 'bg-yellow-500 animate-pulse'}`} />
+        <span className="text-slate-400 uppercase tracking-tighter">API: {apiStatus}</span>
+      </div>
 
       {/* 1. BACKGROUND LAYERS */}
       {/* Fixed gradient fallback */}
