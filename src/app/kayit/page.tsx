@@ -28,17 +28,18 @@ export default function RegisterPage() {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
       const data = await res.json();
 
       if (data.success) {
-        // Initial onboarding logic handling...
         setTimeout(() => router.push('/giris'), 1000);
       } else {
-        alert(data.error);
+        alert(data.error || 'Kayıt başarısız');
         setLoading(false);
       }
     } catch (e) {

@@ -40,9 +40,11 @@ export default function ProfilePage() {
             return;
         }
 
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+
         try {
             // Profil verileri
-            const profileRes = await fetch('/api/profile/stats', {
+            const profileRes = await fetch(`${API_URL}/api/profile/stats`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (profileRes.ok) {
@@ -53,7 +55,7 @@ export default function ProfilePage() {
             }
 
             // Günlük içgörüleri
-            const insightsRes = await fetch('/api/journal/insights', {
+            const insightsRes = await fetch(`${API_URL}/api/journal/insights`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (insightsRes.ok) {
@@ -70,8 +72,9 @@ export default function ProfilePage() {
 
     const completeTask = async (taskIndex: number) => {
         const token = localStorage.getItem('token');
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
         try {
-            await fetch('/api/profile/complete-task', {
+            await fetch(`${API_URL}/api/profile/complete-task`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ taskIndex })
@@ -222,8 +225,8 @@ export default function ProfilePage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 transition-all ${activeTab === tab.id
-                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                                 }`}
                         >
                             <span>{tab.icon}</span>
@@ -399,8 +402,8 @@ export default function ProfilePage() {
                                         <div
                                             key={idx}
                                             className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${task.completed
-                                                    ? 'bg-green-500/10 border-green-500/30'
-                                                    : 'bg-slate-800/50 border-white/5 hover:border-indigo-500/30'
+                                                ? 'bg-green-500/10 border-green-500/30'
+                                                : 'bg-slate-800/50 border-white/5 hover:border-indigo-500/30'
                                                 }`}
                                         >
                                             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${task.completed ? 'bg-green-500' : 'bg-slate-700'

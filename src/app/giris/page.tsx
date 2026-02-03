@@ -33,17 +33,18 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
       const data = await res.json();
 
       if (data.success) {
-        // Particle dissolve effect logic could go here before redirect
         login(data.token, data.user);
       } else {
-        setError(data.error);
+        setError(data.error || 'Giriş başarısız');
         setLoading(false);
       }
     } catch (err) {
