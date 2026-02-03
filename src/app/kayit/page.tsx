@@ -29,7 +29,12 @@ export default function RegisterPage() {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      await api.post('/api/auth/register', formData);
+      // Backend expects email, adding a dummy one if not provided
+      const signupData = {
+        ...formData,
+        email: `${formData.username}@placeholder.com`
+      };
+      await api.post('/api/auth/register', signupData);
       setTimeout(() => router.push('/giris'), 1000);
     } catch (e: any) {
       alert(e.message || 'Kayıt başarısız');
