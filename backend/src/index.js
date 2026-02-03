@@ -17,20 +17,13 @@ const characterRoutes = require('./routes/character');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS - TÜM İSTEKLERE İZİN VER
-app.use(cors({
-    origin: '*', // Tüm originlere izin
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    credentials: true
-}));
+// 1. CORS - MUST BE AT THE VERY TOP
+app.use(cors()); // Allow all origins, all methods, all headers by default
+app.options('*', cors()); // Enable pre-flight across-the-board
 
-// Preflight requests için
-app.options('*', cors());
-
-// Middleware
+// 2. HELMET & MORGAN
 app.use(helmet({ crossOriginResourcePolicy: false }));
-app.use(morgan('combined'));
+app.use(morgan('dev'));
 app.use(express.json());
 
 // MongoDB Connection
