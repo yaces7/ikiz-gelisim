@@ -13,12 +13,16 @@ export async function apiRequest(
         ...options.headers
     };
 
-    const url = `${API_BASE_URL}${endpoint}`;
+    const baseUrl = API_BASE_URL.replace(/\/+$/, '');
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${baseUrl}${cleanEndpoint}`;
 
     try {
         const response = await fetch(url, {
             ...options,
-            headers
+            headers,
+            mode: 'cors',
+            credentials: 'omit' // We use Bearer tokens
         });
 
         if (!response.ok) {

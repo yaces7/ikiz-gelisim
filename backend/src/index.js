@@ -20,74 +20,50 @@ const app = express();
 const server = http.createServer(app);
 
 // 1. VERSION
-const API_VERSION = "2.2.0-ULTRA-RESILIENT";
+const API_VERSION = "2.3.0-DEBUG-ENABLED";
 
-// 2. TRUST PROXY (Essential for Render/Vercel)
-app.set('trust proxy', 1);
-
-// 3. AGGRESSIVE CORS CONFIGURATION
-// We use the 'cors' package for most things, but we handle OPTIONS and headers manually to be absolutely sure.
-const corsOptions = {
-    origin: true, // Echoes the origin of the request
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-};
-
-app.use(cors(corsOptions));
-
-// Extra manual header insurance for every single request
+// 2. IMMEDIATE LOGGING & CORS (Absolute Priority)
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*'); // Overwrite with wildcard for simplicity in debugging
+    console.log(`[REQ] ${req.method} ${req.url} - ${new Date().toISOString()}`);
+
+    // Explicit CORS headers for EVERY response
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+
+    // Handle Preflight
     if (req.method === 'OPTIONS') {
-        return res.status(204).end();
+        console.log(`[CORS] Handled OPTIONS for ${req.url}`);
+        return res.status(200).send();
     }
     next();
 });
 
-// 4. SOCKET.IO SETUP
-const io = new Server(server, {
-    path: "/socket.io/",
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
-
-io.on('connection', (socket) => {
-    console.log(`[Socket] Connected: ${socket.id}`);
-    socket.on('disconnect', () => console.log(`[Socket] Disconnected: ${socket.id}`));
-});
-
-// 5. MIDDLEWARES
-app.use(helmet({
-    crossOriginResourcePolicy: false,
-    crossOriginEmbedderPolicy: false
-}));
+// 3. MIDDLEWARES
+app.use(cors({ origin: '*', credentials: true })); // Safe double-up
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Request Logger
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.get('origin')}`);
-    next();
+// 4. SOCKET.IO
+const io = new Server(server, {
+    cors: { origin: "*", methods: ["GET", "POST"] }
 });
 
-// 6. DIAGNOSTIC ROUTES
-app.get('/test', (req, res) => res.send(`API IS ALIVE - VERSION: ${API_VERSION}`));
-app.get('/ping', (req, res) => res.send('pong'));
-app.get('/api/health', (req, res) => {
+// 5. DIAGNOSTICS
+app.get('/test', (req, res) => {
     res.json({
-        status: 'UP',
+        status: "alive",
         version: API_VERSION,
-        db: mongoose.connection.readyState === 1 ? 'CONNECTED' : 'DISCONNECTED',
-        env: process.env.NODE_ENV
+        timestamp: new Date().toISOString(),
+        headers: req.headers
     });
 });
 
-// 7. BUSINESS ROUTES
+app.get('/ping', (req, res) => res.status(200).send('pong'));
+
+// 6. ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/journal', journalRoutes);
@@ -96,43 +72,24 @@ app.use('/api/game', gameRoutes);
 app.use('/api/task', taskRoutes);
 app.use('/api/character', characterRoutes);
 
-// 8. CATCH-ALL 404 (with CORS)
+// 7. 404 & ERROR
 app.use((req, res) => {
-    console.warn(`[404] NOT FOUND: ${req.method} ${req.url}`);
-    res.status(404).json({
-        error: 'Endpoint Bulunamadı',
-        path: req.url,
-        message: 'Bu yol sunucuda tanımlı değil. Eğer /api ekini unuttuysanız ekleyin.'
-    });
+    console.warn(`[404] ${req.method} ${req.url}`);
+    res.status(404).json({ error: "Route not found", path: req.url });
 });
 
-// 9. ERROR HANDLER
 app.use((err, req, res, next) => {
-    console.error('[CRITICAL SERVER ERROR]', err);
-    res.status(500).json({
-        error: 'Sunucu Hatası',
-        details: err.message,
-        path: req.url
-    });
+    console.error(`[ERR] ${err.message}`);
+    res.status(500).json({ error: "Server error", message: err.message });
 });
 
-// 10. START SERVER
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`
-    =========================================
-    🚀 İKİZ GELİŞİM API v${API_VERSION}
-    📡 Port: ${PORT}
-    =========================================
-    `);
+    console.log(`🚀 API v${API_VERSION} on port ${PORT}`);
 });
 
-// Connect to MongoDB
-const MONGODB_URI = process.env.MONGODB_URI;
-if (MONGODB_URI) {
-    mongoose.connect(MONGODB_URI)
-        .then(() => console.log('✅ MongoDB Bağlantısı Başarılı'))
-        .catch(err => console.error('❌ MongoDB Bağlantı Hatası:', err.message));
-} else {
-    console.warn('⚠️ MONGODB_URI TANIMLANMAMIŞ!');
+if (process.env.MONGODB_URI) {
+    mongoose.connect(process.env.MONGODB_URI)
+        .then(() => console.log('✅ MongoDB connected'))
+        .catch(err => console.error('❌ MongoDB error:', err.message));
 }
