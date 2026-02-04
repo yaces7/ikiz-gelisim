@@ -16,6 +16,7 @@ const gameRoutes = require('./routes/game');
 const taskRoutes = require('./routes/task');
 const characterRoutes = require('./routes/character');
 const parentRoutes = require('./routes/parent');
+const progressionRoutes = require('./routes/progression');
 
 const app = express();
 const server = http.createServer(app);
@@ -73,6 +74,7 @@ app.use('/api/game', gameRoutes);
 app.use('/api/task', taskRoutes);
 app.use('/api/character', characterRoutes);
 app.use('/api/parent', parentRoutes);
+app.use('/api/progression', progressionRoutes);
 
 // 7. 404 & ERROR
 app.use((req, res) => {
