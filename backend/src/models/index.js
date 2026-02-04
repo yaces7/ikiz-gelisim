@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema({
     level: { type: Number, default: 1 },
     total_points: { type: Number, default: 0 },
     twin_id: { type: String, default: null },
+    familyCode: { type: String, default: null },
     current_week: { type: Number, default: 1 },
     completed_weeks: [{ type: Number }],
     character: {
