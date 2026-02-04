@@ -57,6 +57,8 @@ router.get('/stats', authMiddleware, async (req, res) => {
         res.json({
             user: {
                 username: user.username,
+                email: user.email,
+                familyCode: user.familyCode,
                 level,
                 title,
                 nextLevelProgress: ((user.total_points || 0) % 500) / 5,

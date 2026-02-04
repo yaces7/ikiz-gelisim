@@ -166,7 +166,14 @@ export default function ProfilePage() {
                             <h1 className="text-3xl font-black text-white mb-1">
                                 {character?.name || user?.username || 'İkiz Kullanıcı'}
                             </h1>
-                            <p className="text-indigo-400 font-medium mb-4">{levelInfo.title}</p>
+                            <div className="flex flex-col md:flex-row gap-2 mb-4">
+                                <span className="text-indigo-400 font-medium">{levelInfo.title}</span>
+                                {levelInfo.familyCode && (
+                                    <span className="bg-slate-800 text-slate-400 px-2 py-0.5 rounded text-xs border border-white/5 self-start md:self-center">
+                                        Aile Kodu: <strong className="text-white select-all">{levelInfo.familyCode}</strong>
+                                    </span>
+                                )}
+                            </div>
 
                             {/* XP Progress */}
                             <div className="w-full max-w-md">
