@@ -13,6 +13,9 @@ export const metadata: Metadata = {
 
 import { Providers } from "./providers";
 
+import { Suspense } from 'react';
+import LoadingScreen from './components/LoadingScreen';
+
 export default function RootLayout({
   children,
 }: {
@@ -23,7 +26,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <Navbar />
-          {children}
+          <Suspense fallback={<LoadingScreen />}>
+            {children}
+          </Suspense>
         </Providers>
       </body>
     </html>
