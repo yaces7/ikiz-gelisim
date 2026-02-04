@@ -26,52 +26,78 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         });
 
         const dashboardData = await Promise.all(children.map(async (child) => {
-            // 1. Scores (Individuation)
+            // 1. Scores (Games & Tests)
             const scores = await Score.find({ user_id: child._id });
+
+            // 2. Recent Activities (Interactions)
+            const interactions = await Interaction.find({
+                user_id: child._id,
+                action_type: { $in: ['test_complete', 'game_complete', 'journal_entry', 'login'] }
+            }).sort({ timestamp: -1 }).limit(5);
+
+            // 3. Wheel Tasks
+            const completedTasks = child.wheelTasks?.filter(t => t.completed).length || 0;
 
             // Calculate aggregations
             let totalIndividuation = 50;
             let gameScores = { boundary: 0, distinctness: 0 };
+            let totalPoints = child.total_points || 0;
 
             scores.forEach(s => {
                 if (s.test_type === 'GAME') {
-                    // Normalize game scores
                     const raw = s.sub_dimensions?.rawScore || 0;
                     if (s.sub_dimensions?.gameId === 'boundary') gameScores.boundary = raw;
+                } else if (s.test_type === 'BSO' || s.test_type === 'WEEKLY') {
+                    // Update individuation based on latest test
+                    totalIndividuation = s.total_score;
                 }
-            });
-
-            // 2. Journal Analysis (Sentiment & Me-Ratio)
-            const journals = await Interaction.find({
-                user_id: child._id,
-                action_type: 'journal_entry'
-            }).sort({ timestamp: -1 }).limit(5);
-
-            const journalStats = journals.map(j => {
-                let parsed = {};
-                try { parsed = JSON.parse(j.content); } catch (e) { }
-                return {
-                    date: j.timestamp,
-                    sentiment: parsed.sentimentScore || 50,
-                    meRatio: parsed.meRatio || 0.5
-                };
             });
 
             return {
                 id: child._id,
                 name: child.username,
-                level: child.level,
-                currentWeek: child.current_week,
-                stats: {
-                    gameScores,
-                    journalTrends: journalStats
-                }
+                progress: totalIndividuation,
+                points: totalPoints,
+                recentActivities: interactions.map(i => ({
+                    type: i.action_type,
+                    description: i.content,
+                    timestamp: i.timestamp
+                }))
             };
         }));
 
+        // Prepare Chart Data
+        const chartLabels = ['Başlangıç', 'Hafta 1', 'Hafta 2', 'Güncel'];
+        const datasets = dashboardData.map((child, index) => ({
+            label: child.name,
+            data: [50, 55, 60, child.progress], // Placeholder history, real app would query historic scores
+            borderColor: index === 0 ? 'rgb(59, 130, 246)' : 'rgb(168, 85, 247)',
+            backgroundColor: index === 0 ? 'rgba(59, 130, 246, 0.5)' : 'rgba(168, 85, 247, 0.5)',
+            tension: 0.4
+        }));
+
+        // Aggregated Stats
+        const totalActivities = dashboardData.reduce((acc, curr) => acc + curr.points, 0);
+        const averageProgress = Math.round(dashboardData.reduce((acc, curr) => acc + curr.progress, 0) / (dashboardData.length || 1));
+        const allRecentActivities = dashboardData.flatMap(c => c.recentActivities)
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10);
+
+        // Simple AI Insight Logic
+        let aiInsight = "Çocuklarınızın gelişimi düzenli ilerliyor.";
+        if (averageProgress > 70) aiInsight = "Harika! Çocuklarınızın bireyselleşme seviyesi yüksek. Onları desteklemeye devam edin.";
+        else if (averageProgress < 40) aiInsight = "Çocuklarınızın biraz daha desteğe ihtiyacı olabilir. Bireysel aktivitelere teşvik edin.";
+
         res.json({
-            familyCode: parent.familyCode,
-            children: dashboardData
+            data: {
+                averageProgress,
+                totalActivities,
+                guidanceMode: "Aktif",
+                aiInsight,
+                chartLabels,
+                datasets,
+                recentActivities: allRecentActivities
+            }
         });
 
     } catch (error) {
