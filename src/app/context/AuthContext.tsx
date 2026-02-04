@@ -13,6 +13,8 @@ interface User {
     level?: number;
     total_points?: number;
     current_week?: number;
+    active_week?: number;
+    familyCode?: string;
     completed_weeks?: number[];
 }
 

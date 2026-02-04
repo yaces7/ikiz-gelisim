@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Suspense, useState, useEffect } from 'react';
@@ -6,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import Confetti from 'react-confetti';
-import { weeklyTests as tests } from '../data/testQuestions';
+import { allTests } from '../data/testQuestions';
 import api from '../lib/api';
 
 export default function TestsPage() {
@@ -19,28 +18,41 @@ export default function TestsPage() {
 
 function TestInterface() {
   const { user } = useAuth();
-  const [activeWeek, setActiveWeek] = useState<number | null>(null);
+
+  // Use active_week from user context (default to 1)
+  const activeWeek = user?.active_week || 1;
+
+  const [activeTestId, setActiveTestId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [scores, setScores] = useState<Record<string, number>>({});
-  const [completedWeeks, setCompletedWeeks] = useState<number[]>([]);
+  const [completedTests, setCompletedTests] = useState<string[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [answers, setAnswers] = useState<{ qId: number, score: number }[]>([]);
 
-  // Fetch History
+  // Filter tests for the active week
+  const weekTests = allTests.filter(t => t.week === activeWeek).sort((a, b) => a.order - b.order);
+
+  // Fetch History on Load
   useEffect(() => {
     const fetchHistory = async () => {
       if (!user) return;
       try {
         const data = await api.get('/api/test/history');
-        setCompletedWeeks(data.completedWeeks || []);
-        // Also restore scores map
+        // Parse history to find completed WEEKLY tests
+        const completed: string[] = [];
         const scoreMap: Record<string, number> = {};
-        if (data.history) {
-          data.history.forEach((h: any) => {
-            scoreMap[h.weekId] = h.score;
+
+        if (data.scores) {
+          data.scores.forEach((s: any) => {
+            if (s.sub_dimensions && s.sub_dimensions.testId) {
+              const tId = s.sub_dimensions.testId;
+              if (!completed.includes(tId)) completed.push(tId);
+              scoreMap[tId] = s.total_score;
+            }
           });
         }
+        setCompletedTests(completed);
         setScores(scoreMap);
       } catch (e) {
         console.error("Failed to load test history", e);
@@ -49,38 +61,25 @@ function TestInterface() {
     fetchHistory();
   }, [user]);
 
-  const handleStartWeek = (weekId: number) => {
+  const handleStartTest = (testId: string) => {
     if (!user) return;
-
-    // Sequential Lock Check
-    if (weekId > 1 && !completedWeeks.includes(weekId - 1)) {
-      alert("Önceki haftayı tamamlamadan bu teste başlayamazsınız!");
-      return;
-    }
-
-    if (completedWeeks.includes(weekId)) {
-      // Optional: Allow retake? For now, maybe just show score.
-      // alert("Bu testi zaten tamamladınız.");
-      // return;
-    }
-
-    setActiveWeek(weekId);
+    setActiveTestId(testId);
     setCurrentQuestionIndex(0);
     setAnswers([]);
     setShowResult(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleAnswer = (scoreIndex: number) => {
-    if (animating || activeWeek === null) return;
+    if (animating || !activeTestId) return;
 
     setAnimating(true);
 
-    // Calculate score (0-100 based on index? Or raw option index?)
-    // Let's assume options are ordered [Least Independent -> Most Independent] or vice versa.
-    // For simplicity: index 0 = 0pts, index 3 = 100pts
+    // Scoring: 0 to 100 based on option choice. 
+    // Assuming 4 options: 0->0, 1->33, 2->66, 3->100
     const points = Math.round((scoreIndex / 3) * 100);
 
-    const currentTest = tests.find(t => t.id === activeWeek);
+    const currentTest = weekTests.find(t => t.id === activeTestId);
     if (!currentTest) return;
 
     const qId = currentTest.questions[currentQuestionIndex].id;
@@ -93,24 +92,29 @@ function TestInterface() {
         setAnimating(false);
       } else {
         // Finish Logic
-        const totalScore = newAnswers.reduce((sum, item) => sum + item.score, 0);
-        const averageScore = Math.round(totalScore / newAnswers.length);
-        finishTest(activeWeek, averageScore, newAnswers);
+        const totalScore = Math.round(newAnswers.reduce((sum, item) => sum + item.score, 0) / newAnswers.length);
+        finishTest(activeTestId, totalScore, newAnswers);
       }
     }, 500);
   };
 
-  const finishTest = async (weekId: number, finalScore: number, answersLog: any[]) => {
-    setScores(prev => ({ ...prev, [weekId]: finalScore }));
-    setCompletedWeeks(prev => [...prev, weekId]);
+  const finishTest = async (testId: string, finalScore: number, answersLog: any[]) => {
+    setScores(prev => ({ ...prev, [testId]: finalScore }));
+    setCompletedTests(prev => [...prev, testId]);
     setShowResult(true);
     setAnimating(false);
 
+    // Fix layout issue: Scroll to top to ensure result is visible
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+
     try {
       await api.post('/api/test/save', {
-        weekId,
-        score: finalScore,
-        answers: answersLog
+        test_type: 'WEEKLY',
+        total_score: finalScore,
+        week_number: activeWeek,
+        sub_dimensions: { testId, answers: answersLog }
       });
     } catch (err) {
       console.error('Save failed', err);
@@ -118,7 +122,7 @@ function TestInterface() {
   };
 
   const closeResult = () => {
-    setActiveWeek(null);
+    setActiveTestId(null);
     setShowResult(false);
   };
 
@@ -135,25 +139,29 @@ function TestInterface() {
   }
 
   // Active Test View
-  if (activeWeek !== null) {
-    const currentTest = tests.find(t => t.id === activeWeek);
+  if (activeTestId) {
+    const currentTest = weekTests.find(t => t.id === activeTestId);
     if (!currentTest) return null;
 
     if (showResult) {
       return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
-          <Confetti numberOfPieces={300} recycle={false} />
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+          {/* Confetti container fixed to viewport */}
+          <div className="fixed inset-0 pointer-events-none">
+            <Confetti numberOfPieces={300} recycle={false} />
+          </div>
+
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-slate-900 border border-white/10 p-12 rounded-3xl text-center max-w-lg w-full shadow-2xl"
+            className="bg-slate-900 border border-white/10 p-8 md:p-12 rounded-3xl text-center max-w-lg w-full shadow-2xl relative z-10"
           >
             <div className="text-6xl mb-6">🧬</div>
             <h2 className="text-3xl font-black text-white mb-2">{currentTest.title} Tamamlandı!</h2>
             <div className="my-8">
               <div className="text-sm text-slate-400 uppercase tracking-widest mb-2">Bireyselleşme Puanın</div>
               <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-                {scores[activeWeek]}
+                {scores[activeTestId]}
               </div>
             </div>
             <p className="text-slate-400 mb-8 italic">
@@ -171,6 +179,8 @@ function TestInterface() {
     }
 
     const question = currentTest.questions[currentQuestionIndex];
+    if (!question) return null;
+
     const progress = ((currentQuestionIndex) / currentTest.questions.length) * 100;
 
     return (
@@ -178,8 +188,8 @@ function TestInterface() {
         <div className="w-full max-w-3xl">
           {/* Header */}
           <div className="flex justify-between items-center mb-8 text-slate-400">
-            <span className="font-bold tracking-widest uppercase">{currentTest.title}</span>
-            <span>{currentQuestionIndex + 1} / {currentTest.questions.length}</span>
+            <span className="font-bold tracking-widest uppercase text-xs md:text-sm">{currentTest.title}</span>
+            <span className="text-xs md:text-sm">{currentQuestionIndex + 1} / {currentTest.questions.length}</span>
           </div>
 
           {/* Question Card */}
@@ -189,50 +199,59 @@ function TestInterface() {
               initial={{ x: 50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -50, opacity: 0 }}
-              className="bg-slate-900 border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden"
+              className="bg-slate-900 border border-white/10 rounded-3xl p-6 md:p-12 shadow-2xl relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500" style={{ width: `${progress}%` }} />
 
-              <h2 className="text-2xl md:text-4xl font-bold text-white mb-12 leading-tight">
+              <h2 className="text-xl md:text-3xl font-bold text-white mb-8 md:mb-12 leading-tight">
                 {question.text}
               </h2>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {question.options.map((opt, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleAnswer(idx)}
-                    className="w-full p-6 text-left bg-slate-800 hover:bg-slate-700 border border-white/5 hover:border-blue-500/50 rounded-2xl transition-all group flex items-center justify-between"
+                    className="w-full p-4 md:p-6 text-left bg-slate-800 hover:bg-slate-700 border border-white/5 hover:border-blue-500/50 rounded-2xl transition-all group flex items-center justify-between"
                   >
-                    <span className="text-lg text-slate-200 font-medium group-hover:text-white transition-colors">{opt}</span>
-                    <span className="w-6 h-6 rounded-full border border-slate-600 group-hover:border-blue-400 group-hover:bg-blue-400/20 transition-all" />
+                    <span className="text-sm md:text-lg text-slate-200 font-medium group-hover:text-white transition-colors">{opt}</span>
+                    <span className="w-5 h-5 md:w-6 md:h-6 rounded-full border border-slate-600 group-hover:border-blue-400 group-hover:bg-blue-400/20 transition-all flex-shrink-0 ml-2" />
                   </button>
                 ))}
               </div>
             </motion.div>
           </AnimatePresence>
+
+          <button onClick={() => setActiveTestId(null)} className="mt-8 text-slate-500 hover:text-white text-sm">
+            ← Listeye Dön
+          </button>
         </div>
       </div>
     );
   }
 
-  // Dashboard View
+  // Dashboard View for Active Week
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans py-12 px-4">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans py-20 px-4">
       <div className="max-w-7xl mx-auto">
+
+        {/* Header */}
         <div className="text-center mb-16 space-y-4">
+          <div className="inline-block px-4 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-2">
+            Hafta {activeWeek}
+          </div>
           <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">
             Gelişim Laboratuvarı
           </h1>
           <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-            6 haftalık bilimsel gelişim programını tamamla, kendi kimliğini keşfet.
+            Bu haftanın özel testlerini tamamlayarak gelişimini takip et.
           </p>
         </div>
 
+        {/* Tests Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {tests.map((test, index) => {
-            const isLocked = test.id > 1 && !completedWeeks.includes(test.id - 1);
-            const isCompleted = completedWeeks.includes(test.id);
+          {weekTests.length > 0 ? weekTests.map((test, index) => {
+            const isCompleted = completedTests.includes(test.id);
             const score = scores[test.id];
 
             return (
@@ -241,31 +260,29 @@ function TestInterface() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`relative rounded-3xl p-8 border hover:scale-[1.02] transition-all duration-300 ${isLocked
-                  ? 'bg-slate-900/50 border-white/5 opacity-50 cursor-not-allowed'
-                  : isCompleted
+                className={`relative rounded-3xl p-8 border hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between min-h-[300px] ${isCompleted
                     ? 'bg-slate-900 border-green-500/30 shadow-green-900/10'
                     : 'bg-slate-900 border-white/10 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-900/20'
                   }`}
-                onClick={() => !isLocked && handleStartWeek(test.id)}
+                onClick={() => handleStartTest(test.id)}
               >
-                <div className="flex justify-between items-start mb-6">
-                  <span className="text-5xl font-black text-white/10">{test.id}</span>
-                  {isCompleted ? (
-                    <div className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/20">
-                      TAMAMLANDI
-                    </div>
-                  ) : isLocked ? (
-                    <div className="text-2xl">🔒</div>
-                  ) : (
-                    <div className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs font-bold rounded-full border border-blue-500/20 animate-pulse">
-                      AKTİF
-                    </div>
-                  )}
-                </div>
+                <div>
+                  <div className="flex justify-between items-start mb-6">
+                    <span className="text-5xl font-black text-white/10">0{test.order}</span>
+                    {isCompleted ? (
+                      <div className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/20">
+                        TAMAMLANDI
+                      </div>
+                    ) : (
+                      <div className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs font-bold rounded-full border border-blue-500/20 animate-pulse">
+                        HAZIR
+                      </div>
+                    )}
+                  </div>
 
-                <h3 className="text-xl font-bold text-white mb-2">{test.title}</h3>
-                <p className="text-sm text-slate-400 mb-6 min-h-[40px]">{test.description}</p>
+                  <h3 className="text-xl font-bold text-white mb-2">{test.title}</h3>
+                  <p className="text-sm text-slate-400 mb-6">{test.description}</p>
+                </div>
 
                 {isCompleted && (
                   <div className="mb-4">
@@ -275,19 +292,20 @@ function TestInterface() {
                 )}
 
                 <button
-                  disabled={isLocked}
-                  className={`w-full py-3 rounded-xl font-bold transition-all ${isLocked
-                    ? 'bg-white/5 text-slate-500'
-                    : isCompleted
+                  className={`w-full py-3 rounded-xl font-bold transition-all ${isCompleted
                       ? 'bg-white/5 text-white hover:bg-white/10'
                       : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20'
                     }`}
                 >
-                  {isLocked ? 'Önceki Haftayı Tamamla' : isCompleted ? 'Tekrar Çöz' : 'Başla'}
+                  {isCompleted ? 'Tekrar Çöz' : 'Başla'}
                 </button>
               </motion.div>
             );
-          })}
+          }) : (
+            <div className="col-span-3 text-center py-20">
+              <p className="text-slate-500">Bu hafta için henüz test eklenmedi.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
