@@ -1,4 +1,4 @@
-// API Base URL - Render'daki backend adresi
+// API Base URL - Render'daki backend adresin
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ikiz-gelisim.onrender.com';
 
 export async function apiRequest(

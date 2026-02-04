@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['user', 'researcher', 'parent', 'admin'], default: 'user' },
+    role: { type: String, enum: ['user', 'twin', 'researcher', 'parent', 'admin'], default: 'user' },
     level: { type: Number, default: 1 },
     total_points: { type: Number, default: 0 },
     twin_id: { type: String, default: null },
