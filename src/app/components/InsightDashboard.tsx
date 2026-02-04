@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
     Chart as ChartJS,
     RadialLinearScale,
@@ -12,6 +13,7 @@ import {
 import { Radar } from 'react-chartjs-2';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
+import api from '../lib/api';
 
 ChartJS.register(
     RadialLinearScale,
@@ -24,23 +26,38 @@ ChartJS.register(
 
 export default function InsightDashboard() {
     const { user } = useAuth();
+    const [stats, setStats] = useState<number[]>([50, 50, 50, 50, 50, 50]);
+    const [labels, setLabels] = useState<string[]>(['Özerklik', 'Sınırlar', 'İletişim', 'Özgüven', 'Farkındalık', 'Risk Alma']);
+    const [loading, setLoading] = useState(false);
 
-    // Data Logic: Zeroes if no user
-    const currentData = user ? [65, 59, 90, 81, 56, 55] : [0, 0, 0, 0, 0, 0];
+    useEffect(() => {
+        if (user) {
+            setLoading(true);
+            api.get('/api/profile/stats')
+                .then(data => {
+                    if (data?.stats?.radarData) {
+                        setStats(data.stats.radarData);
+                        setLabels(data.stats.radarLabels);
+                    }
+                })
+                .catch(err => console.error("Dashboard stats error", err))
+                .finally(() => setLoading(false));
+        }
+    }, [user]);
 
     const data = {
-        labels: ['Özerklik', 'Bağlılık', 'Sosyal Yetkinlik', 'Özgüven', 'Risk Alma', 'Empati'],
+        labels: labels,
         datasets: [
             {
                 label: 'Mevcut Durum',
-                data: currentData,
+                data: user ? stats : [0, 0, 0, 0, 0, 0],
                 backgroundColor: 'rgba(59, 130, 246, 0.2)',
                 borderColor: 'rgba(59, 130, 246, 1)',
                 borderWidth: 2,
             },
             {
                 label: 'Hedef',
-                data: [80, 70, 85, 90, 70, 80],
+                data: [80, 80, 80, 90, 80, 75], // Hedefler de dinamik olabilir ama şimdilik statik iyi
                 backgroundColor: 'rgba(200, 200, 200, 0.05)',
                 borderColor: 'rgba(200, 200, 200, 0.3)',
                 borderWidth: 1,
@@ -59,7 +76,7 @@ export default function InsightDashboard() {
                 angleLines: { color: gridColor },
                 grid: { color: gridColor },
                 pointLabels: {
-                    font: { size: 12, family: 'Inter', weight: 'bold' },
+                    font: { size: 11, family: 'Inter', weight: 'bold' },
                     color: textColor,
                 },
                 ticks: {
@@ -108,7 +125,7 @@ export default function InsightDashboard() {
                         Gelişim Radarı
                     </h2>
                     <span className="px-3 py-1 text-xs font-bold bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30">
-                        Haftalık Analiz
+                        {loading ? 'Yükleniyor...' : 'Canlı Veri'}
                     </span>
                 </div>
 
@@ -126,12 +143,17 @@ export default function InsightDashboard() {
                         <div>
                             <h3 className="font-bold text-white text-sm mb-1">Gelişim Fırsatı</h3>
                             <p className="text-xs text-gray-400 mb-2">
-                                {user ? '"Risk Alma" puanın hedefin biraz altında. Yeni bir hobi denemek özgüvenini artırabilir.' : 'Giriş yaptığınızda size özel öneriler burada görünecektir.'}
+                                {user
+                                    ? ((stats[0] || 0) < 60
+                                        ? '"Özerklik" alanında gelişime açıksın. Sınırlarını koruma egzersizleri yapabilirsin.'
+                                        : 'Gelişim haritan dengeli görünüyor. Yeni hedefler belirleme zamanı!')
+                                    : 'Giriş yaptığınızda size özel öneriler burada görünecektir.'
+                                }
                             </p>
                             {user && (
-                                <button className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors">
-                                    Önerilen Aktiviteyi Gör ➜
-                                </button>
+                                <Link href="/profil" className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors">
+                                    Detaylı Analizi Gör ➜
+                                </Link>
                             )}
                         </div>
                     </div>
