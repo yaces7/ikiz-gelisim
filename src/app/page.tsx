@@ -149,7 +149,8 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {weeksContent.map((week) => {
-                const isLocked = user ? (week.week > progressionWeek) : (week.week > 1);
+                // Jüri/Demo hesabı için progressionWeek=6 ise tümü açık
+                const isLocked = user ? (week.week > (progressionWeek || 1)) : (week.week > 1);
 
                 return (
                   <div
