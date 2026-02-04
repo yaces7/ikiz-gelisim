@@ -39,6 +39,7 @@ const topicAlts: Record<string, string> = {
 export default function Home() {
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [progressionWeek, setProgressionWeek] = useState(1);
+  const [activeWeek, setActiveWeek] = useState(1);
   const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const { user } = useAuth();
 
@@ -51,11 +52,24 @@ export default function Home() {
     if (user?.id) {
       api.post('/api/progression/check', { userId: user.id })
         .then(data => {
-          if (data.success) setProgressionWeek(data.week);
+          if (data.success) {
+            setProgressionWeek(data.week);
+            setActiveWeek(data.activeWeek || data.week);
+          }
         })
         .catch(err => console.error("Progression fetch error", err));
     }
   }, [user]);
+
+  const handleSetActiveWeek = async (week: number) => {
+    try {
+      await api.post('/api/progression/select-week', { week });
+      setActiveWeek(week);
+      // Optional: Show success toast
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const selectedTopic = weeksContent.find(w => w.id === selectedTopicId);
 

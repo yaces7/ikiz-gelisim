@@ -59,7 +59,8 @@ router.post('/login', async (req, res) => {
                 role: user.role,
                 level: user.level || 1,
                 total_points: user.total_points || 0,
-                current_week: user.current_week || 1
+                current_week: user.current_week || 1,
+                active_week: user.active_week || 1
             }
         });
     } catch (error) {
@@ -95,7 +96,8 @@ router.post('/register', async (req, res) => {
             gender,
             level: 1,
             total_points: 0,
-            current_week: 1
+            current_week: 1,
+            active_week: 1
         });
 
         await Interaction.create({

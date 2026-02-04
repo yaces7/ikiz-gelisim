@@ -63,6 +63,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
                 title,
                 nextLevelProgress: ((user.total_points || 0) % 500) / 5,
                 current_week: user.current_week || 1,
+                active_week: user.active_week || 1,
                 completed_weeks: user.completed_weeks || []
             },
             stats: {

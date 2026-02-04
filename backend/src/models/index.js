@@ -10,7 +10,8 @@ const UserSchema = new mongoose.Schema({
     total_points: { type: Number, default: 0 },
     twin_id: { type: String, default: null },
     familyCode: { type: String, default: null },
-    current_week: { type: Number, default: 1 },
+    current_week: { type: Number, default: 1 }, // Max unlocked week
+    active_week: { type: Number, default: 1 }, // Currently selected week for content
     completed_weeks: [{ type: Number }],
     character: {
         name: { type: String, default: null },
