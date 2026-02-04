@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -15,51 +17,65 @@ const taskRoutes = require('./routes/task');
 const characterRoutes = require('./routes/character');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const server = http.createServer(app);
 
-// 1. ABSOLUTE CORS OVERRIDE (Must be at the top)
+// 1. VERSION
+const API_VERSION = "2.1.0-ULTRA-STABLE";
+
+// 2. CORS - GLOBAL MANUAL HEADERS (Catch-all)
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Range');
-    res.header('Access-Control-Expose-Headers', 'Content-Length,Content-Range');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
 
-    // Log pre-flight
     if (req.method === 'OPTIONS') {
-        console.log(`[CORS Preflight] ${req.method} ${req.url}`);
         return res.status(200).end();
     }
     next();
 });
 
-// 2. STANDARD CORS MIDDLEWARE
-app.use(cors({ origin: '*', credentials: true }));
+// 3. SOCKET.IO SETUP
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
-// 3. MIDDLEWARES
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+});
+
+// 4. MIDDLEWARES
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Log Detail
+// Request Logger
 app.use((req, res, next) => {
-    console.log(`[API REQUEST] ${new Date().toISOString()} ${req.method} ${req.url}`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
 });
 
-// 4. DATABASE
-const MONGODB_URI = process.env.MONGODB_URI;
-if (MONGODB_URI) {
-    mongoose.connect(MONGODB_URI)
-        .then(() => console.log('✅ MongoDB Connected Successfully'))
-        .catch(err => console.error('❌ MongoDB Connection Error:', err.message));
-} else {
-    console.error('⚠️ WARNING: MONGODB_URI is missing from environment variables!');
-}
+// 5. DIAGNOSTIC ROUTES
+app.get('/test', (req, res) => {
+    res.send(`API IS ALIVE - VERSION: ${API_VERSION}`);
+});
 
-// 5. TEST ROUTES
-app.get('/test', (req, res) => res.status(200).send('API IS ALIVE AND CORS IS OPEN'));
-app.get('/ping', (req, res) => res.status(200).send('pong'));
-app.get('/health', (req, res) => res.status(200).json({ status: 'active', node_env: process.env.NODE_ENV }));
+app.get('/ping', (req, res) => {
+    res.send('pong');
+});
+
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'UP',
+        version: API_VERSION,
+        db: mongoose.connection.readyState === 1 ? 'CONNECTED' : 'DISCONNECTED'
+    });
+});
 
 // 6. BUSINESS ROUTES
 app.use('/api/auth', authRoutes);
@@ -72,30 +88,43 @@ app.use('/api/character', characterRoutes);
 
 // 7. CATCH-ALL 404 (with CORS)
 app.use((req, res) => {
-    console.warn(`[API 404] Route not found: ${req.method} ${req.url}`);
+    console.warn(`[404] NOT FOUND: ${req.method} ${req.url}`);
     res.status(404).json({
-        error: 'Not Found',
+        error: 'Endpoint Bulunamadı',
         path: req.url,
-        message: 'Bu endpoint mevcut değil. Lütfen URLi kontrol edin.'
+        version: API_VERSION,
+        message: 'Lütfen API yolunu kontrol edin veya Renderda Root Directory ayarını "backend" yapın.'
     });
 });
 
-// 8. ERROR HANDLER (with CORS)
+// 8. ERROR HANDLER
 app.use((err, req, res, next) => {
-    console.error('[API CRASH]', err);
+    console.error('[CRITICAL ERROR]', err);
     res.status(500).json({
-        error: 'Internal Server Error',
+        error: 'Sunucu Hatası',
         details: err.message,
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        version: API_VERSION
     });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+// 9. START SERVER
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`
     =========================================
-    🚀 API Sunucusu Başlatıldı
-    🌐 Port: ${PORT}
-    📡 CORS: Aktif (Tüm Originler)
+    🚀 İKİZ GELİŞİM API v${API_VERSION}
+    📡 Port: ${PORT}
+    🏠 Root: backend/src/index.js
     =========================================
     `);
 });
+
+// Connect to MongoDB
+const MONGODB_URI = process.env.MONGODB_URI;
+if (MONGODB_URI) {
+    mongoose.connect(MONGODB_URI)
+        .then(() => console.log('✅ MongoDB Connected'))
+        .catch(err => console.error('❌ MongoDB Error:', err.message));
+} else {
+    console.error('❌ MONGODB_URI IS MISSING!');
+}
