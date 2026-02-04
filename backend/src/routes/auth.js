@@ -71,7 +71,7 @@ router.post('/login', async (req, res) => {
 // REGISTER
 router.post('/register', async (req, res) => {
     try {
-        const { username, email, password, role } = req.body;
+        const { username, email, password, role, familyCode, twinType, birthDate, gender } = req.body;
 
         if (!username || !email || !password) {
             return res.status(400).json({ error: 'Tüm alanlar gerekli' });
@@ -89,6 +89,10 @@ router.post('/register', async (req, res) => {
             email,
             password: hashedPassword,
             role: role || 'user',
+            familyCode,
+            twinType, // Should be added to schema if not present, but mongo is flexible
+            birthDate,
+            gender,
             level: 1,
             total_points: 0,
             current_week: 1
