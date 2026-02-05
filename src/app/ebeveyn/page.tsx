@@ -110,99 +110,129 @@ export default function ParentDashboard() {
   return (
     <div className="min-h-screen bg-slate-950 pt-24 px-4 pb-12">
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white">Ebeveyn Kontrol Paneli</h1>
-            <p className="text-slate-400">Çocuklarınızın gelişim sürecini buradan takip edin.</p>
+            <h1 className="text-4xl font-black text-white tracking-tight">Ebeveyn Paneli</h1>
+            <p className="text-slate-400 font-medium">İkizlerinizin bireyselleşme yolculuğunda yanındayız.</p>
           </div>
-          <button className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg shadow-sm hover:bg-slate-700 text-sm font-medium transition text-white">
-            Rapor İndir (PDF)
-          </button>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-slate-900 border border-white/10 p-6 rounded-xl border-t-4 border-t-green-500"
-          >
-            <h3 className="text-slate-400 text-sm font-medium">Genel İlerleme</h3>
-            <p className="text-3xl font-bold mt-2 text-white">
-              {dashboardData?.averageProgress ? `%${dashboardData.averageProgress}` : '%0'}
-            </p>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-4">
-              <div className="bg-green-500 h-1.5 rounded-full transition-all" style={{ width: `${dashboardData?.averageProgress || 0}%` }}></div>
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 text-xs font-bold uppercase tracking-widest">
+              {dashboardData?.guidanceMode || "AI Aktif"}
             </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-slate-900 border border-white/10 p-6 rounded-xl border-t-4 border-t-blue-500"
-          >
-            <h3 className="text-slate-400 text-sm font-medium">Tamamlanan Aktiviteler</h3>
-            <p className="text-3xl font-bold mt-2 text-white">
-              {dashboardData?.totalActivities || 0}
-            </p>
-            <p className="text-xs text-green-400 mt-2">Aktif katılım</p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-slate-900 border border-white/10 p-6 rounded-xl border-t-4 border-t-purple-500"
-          >
-            <h3 className="text-slate-400 text-sm font-medium">Sistem Rehberliği</h3>
-            <p className="text-lg font-bold mt-2 text-white">
-              {dashboardData?.guidanceMode || "Veri Bekleniyor"}
-            </p>
-            <p className="text-xs text-slate-500 mt-2">Dinamik öneri modu</p>
-          </motion.div>
+            <button className="p-2.5 bg-slate-900 border border-white/5 rounded-xl text-slate-400 hover:text-white transition">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </button>
+          </div>
         </div>
 
-        {/* Main Chart */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <motion.div
-            className="lg:col-span-2 bg-slate-900 border border-white/10 p-6 rounded-2xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Line options={options} data={data} />
-          </motion.div>
+        {/* Comparison Insight Box */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-white/10 p-8 rounded-[32px] relative overflow-hidden group"
+        >
+          <div className="absolute top-0 right-0 p-8 text-6xl opacity-20 group-hover:scale-110 transition-transform">💡</div>
+          <div className="relative z-10 max-w-2xl">
+            <h3 className="text-blue-400 font-black uppercase text-xs tracking-[0.3em] mb-3">AI Karşılaştırmalı Analiz</h3>
+            <p className="text-white text-xl md:text-2xl font-bold leading-snug">
+              {dashboardData?.aiInsight || "Veriler analiz ediliyor..."}
+            </p>
+          </div>
+        </motion.div>
 
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-6 rounded-2xl text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">💡</span>
-                <h3 className="font-bold text-lg">AI Mikro-Rehberlik</h3>
+        {/* Children Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {dashboardData?.children?.map((child: any, idx: number) => (
+            <motion.div
+              key={child.id}
+              initial={{ opacity: 0, x: idx === 0 ? -20 : 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-slate-900/50 border border-white/5 rounded-[32px] p-8 backdrop-blur-sm"
+            >
+              <div className="flex items-start justify-between mb-8">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center text-4xl shadow-xl border border-white/5">
+                    {child.character?.appearance?.emoji || '👤'}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-white">{child.name}</h2>
+                    <p className="text-slate-500 text-sm font-bold">Gelişim Puanı: {child.points} XP</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-black text-blue-500">%{child.progress}</div>
+                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">İlerleme</div>
+                </div>
               </div>
-              <p className="text-indigo-100 text-sm leading-relaxed mb-4">
-                {dashboardData?.aiInsight || "Çocuklarınızın aktiviteleri tamamlandıkça burada size özel yapay zeka önerileri belirecektir."}
-              </p>
-            </div>
 
-            <div className="bg-slate-900 border border-white/10 p-6 rounded-2xl">
-              <h3 className="font-bold text-white mb-4">Son Aktiviteler</h3>
-              <ul className="space-y-4">
-                {dashboardData?.recentActivities?.length > 0 ? (
-                  dashboardData.recentActivities.map((act: any, idx: number) => (
-                    <li key={idx} className="flex items-center gap-3 text-sm text-slate-400">
-                      <span className={`w-2 h-2 rounded-full ${act.type === 'journal' ? 'bg-blue-500' : 'bg-green-500'}`}></span>
-                      <span className="flex-1 truncate">{act.description}</span>
-                      <span className="text-xs text-slate-500">
-                        {new Date(act.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-sm text-slate-500">Henüz aktivite yok.</li>
-                )}
-              </ul>
+              {/* Factors */}
+              <div className="space-y-4 mb-8">
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Gelişim Faktörleri</h4>
+                <div className="grid grid-cols-1 gap-4">
+                  {[
+                    { label: 'Sınır Koyma', value: child.factors?.boundaries || 50, color: 'bg-blue-500' },
+                    { label: 'Sosyal Özgürlük', value: child.factors?.social || 50, color: 'bg-purple-500' },
+                    { label: 'Öz Farkındalık', value: child.factors?.selfAwareness || 50, color: 'bg-green-500' }
+                  ].map(f => (
+                    <div key={f.label} className="space-y-1.5">
+                      <div className="flex justify-between text-[11px] font-bold">
+                        <span className="text-slate-300">{f.label}</span>
+                        <span className="text-slate-500">%{f.value}</span>
+                      </div>
+                      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${f.value}%` }}
+                          className={`h-full ${f.color}`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Child Specific Insight */}
+              <div className="bg-white/5 border border-white/5 p-5 rounded-2xl">
+                <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 italic">Önerilen Yaklaşım</h4>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  {child.aiInsight}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Charts & Activities */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 bg-slate-900/50 border border-white/5 p-8 rounded-[32px]">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-black text-white">Zaman Çizelgesi</h3>
+              <div className="flex gap-2">
+                {dashboardData?.datasets?.map((ds: any, i: number) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: ds.borderColor }}></div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">{ds.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="h-[300px]">
+              <Line options={options} data={data} />
+            </div>
+          </div>
+
+          <div className="bg-slate-900/50 border border-white/5 p-8 rounded-[32px] flex flex-col">
+            <h3 className="text-xl font-black text-white mb-6">Akış</h3>
+            <div className="flex-1 space-y-6 overflow-y-auto max-h-[350px] pr-2 custom-scrollbar">
+              {dashboardData?.recentActivities?.map((act: any, idx: number) => (
+                <div key={idx} className="relative pl-6 border-l-2 border-white/5 pb-2">
+                  <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                  <div className="text-[10px] font-black text-slate-600 uppercase tracking-tighter mb-1">
+                    {new Date(act.timestamp).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                  <div className="text-sm font-bold text-slate-300 leading-tight">{act.description}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

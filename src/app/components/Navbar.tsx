@@ -84,17 +84,29 @@ const NavbarContent = () => {
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center space-x-1">
-            {menuItems.map((route) => (
-              <motion.button
-                key={route}
-                onClick={() => handleNavigation(route)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={getButtonClass(route)}
-              >
-                {route.charAt(0).toUpperCase() + route.slice(1).replace('-', ' ')}
-              </motion.button>
-            ))}
+            {menuItems.map((route) => {
+              const labels: Record<string, string> = {
+                'konular': 'Konular',
+                'carkifelek': 'Çarkıfelek',
+                'testler': 'Testler',
+                'gunluk': 'Günlük',
+                'etkinlikler': 'Etkinlikler',
+                'oyunlar': 'Oyunlar',
+                'karakter-oyunu': 'Karakter Oyunu',
+                'ebeveyn': 'Ebeveyn Paneli'
+              };
+              return (
+                <motion.button
+                  key={route}
+                  onClick={() => handleNavigation(route)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={getButtonClass(route)}
+                >
+                  {labels[route] || route}
+                </motion.button>
+              );
+            })}
           </div>
 
           {/* Right Section (Auth) */}
@@ -151,16 +163,28 @@ const NavbarContent = () => {
             className="lg:hidden bg-slate-900 border-b border-white/5 overflow-hidden shadow-2xl"
           >
             <div className="px-4 py-6 space-y-2">
-              {menuItems.map((route) => (
-                <button
-                  key={route}
-                  onClick={() => handleNavigation(route)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeRoute === route ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-white/5'}`}
-                >
-                  <span className="w-2 h-2 rounded-full border border-current opacity-40" />
-                  {route.charAt(0).toUpperCase() + route.slice(1).replace('-', ' ')}
-                </button>
-              ))}
+              {menuItems.map((route) => {
+                const labels: Record<string, string> = {
+                  'konular': 'Konular',
+                  'carkifelek': 'Çarkıfelek',
+                  'testler': 'Testler',
+                  'gunluk': 'Günlük',
+                  'etkinlikler': 'Etkinlikler',
+                  'oyunlar': 'Oyunlar',
+                  'karakter-oyunu': 'Karakter Oyunu',
+                  'ebeveyn': 'Ebeveyn Paneli'
+                };
+                return (
+                  <button
+                    key={route}
+                    onClick={() => handleNavigation(route)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeRoute === route ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-white/5'}`}
+                  >
+                    <span className="w-2 h-2 rounded-full border border-current opacity-40" />
+                    {labels[route] || route}
+                  </button>
+                );
+              })}
 
               <div className="pt-4 mt-4 border-t border-white/5 flex flex-col gap-2">
                 {user ? (

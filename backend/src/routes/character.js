@@ -17,18 +17,18 @@ router.post('/save', authMiddleware, async (req, res) => {
                 values: values || [],
                 goals: goals || []
             },
-            $inc: { total_points: 25 }
+            $inc: { total_points: 50 }
         });
 
         await Interaction.create({
             user_id: userId,
             action_type: 'character_created',
             content: `Karakter oluşturuldu: ${name}`,
-            impact_score: 25,
+            impact_score: 50,
             timestamp: new Date()
         });
 
-        res.json({ success: true, points: 25 });
+        res.json({ success: true, points: 50 });
 
     } catch (error) {
         console.error('Character Save Error:', error);
