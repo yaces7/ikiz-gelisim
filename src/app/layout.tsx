@@ -15,6 +15,7 @@ import { Providers } from "./providers";
 
 import { Suspense } from 'react';
 import LoadingScreen from './components/LoadingScreen';
+import ActivityTracker from './components/ActivityTracker';
 
 export default function RootLayout({
   children,
@@ -25,6 +26,7 @@ export default function RootLayout({
     <html lang="tr">
       <body className={inter.className}>
         <Providers>
+          <ActivityTracker />
           <Navbar />
           <Suspense fallback={<LoadingScreen />}>
             {children}

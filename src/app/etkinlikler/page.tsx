@@ -11,28 +11,52 @@ import api from '../lib/api';
 // Categories for Todo List
 type Category = 'bireysel' | 'sosyal' | 'akademik';
 
-// Mock Data - In real app, fetch from API
-const initialTasks = [
-  { id: 1, text: "Bugün 30 dakika tek başına kitap oku.", category: 'bireysel', xp: 50, completed: false },
-  { id: 2, text: "Farklı bir arkadaşınla öğle yemeği ye.", category: 'sosyal', xp: 70, completed: false },
-  { id: 3, text: "Odanı düzenle ve kendine ait bir köşe yarat.", category: 'bireysel', xp: 60, completed: false },
-  { id: 4, text: "İkizinden bağımsız bir ders programı hazırla.", category: 'akademik', xp: 80, completed: false },
-  { id: 5, text: "Bir hobini icra et (Resim, Müzik, Spor).", category: 'bireysel', xp: 50, completed: false },
-  { id: 6, text: "Bugün 'hayır' demen gereken bir durumda sınır koy.", category: 'sosyal', xp: 100, completed: false },
-  { id: 7, text: "Kendini ifade eden bir yazı yaz (Günlük kısmında).", category: 'bireysel', xp: 40, completed: false },
-  { id: 8, text: "Gelecek hedeflerinle ilgili bir araştırma yap.", category: 'akademik', xp: 60, completed: false },
-];
+// Mock Data - Grouped by weeks
+const weeklyTasks: Record<number, { id: number, text: string, category: Category, xp: number, completed: boolean }[]> = {
+  1: [
+    { id: 101, text: "Aynada kendine bakarak ikizinden 3 farklı özelliğini yaz.", category: 'bireysel', xp: 50, completed: false },
+    { id: 102, text: "Bugün kıyafet seçimini tamamen kendi zevkine göre yap.", category: 'bireysel', xp: 60, completed: false },
+    { id: 103, text: "Farklı bir arkadaşınla öğle yemeği ye veya sohbet et.", category: 'sosyal', xp: 70, completed: false },
+  ],
+  2: [
+    { id: 201, text: "Odanı düzenle ve kendine ait özel bir köşe yarat.", category: 'bireysel', xp: 60, completed: false },
+    { id: 202, text: "Bugün birine nazikçe 'hayır' diyerek sınırlarını koru.", category: 'sosyal', xp: 100, completed: false },
+    { id: 203, text: "Sosyal medyada ikizinden bağımsız bir paylaşım yap.", category: 'sosyal', xp: 50, completed: false },
+  ],
+  3: [
+    { id: 301, text: "İkizin üzgünken kendi duygularına odaklanıp spor yap.", category: 'bireysel', xp: 80, completed: false },
+    { id: 302, text: "Duygu günlüğüne 'Sadece Benim' hislerimi yazdım.", category: 'bireysel', xp: 40, completed: false },
+    { id: 303, text: "Aile içinde kendi fikrini ikizinden ayrı savun.", category: 'sosyal', xp: 90, completed: false },
+  ],
+  4: [
+    { id: 401, text: "İkizinden bağımsız bir ders programı hazırla.", category: 'akademik', xp: 80, completed: false },
+    { id: 402, text: "Kendi öğrenme stilini test et ve bir konuyu öyle çalış.", category: 'akademik', xp: 70, completed: false },
+    { id: 403, text: "Kütüphanede veya odanda tek başına 45 dk odaklan.", category: 'akademik', xp: 60, completed: false },
+  ],
+  5: [
+    { id: 501, text: "İkizinle yaşadığın bir tartışmayı 'ben dili' ile çöz.", category: 'sosyal', xp: 100, completed: false },
+    { id: 502, text: "Ortak bir eşyanın kullanımı için kural belirle.", category: 'sosyal', xp: 50, completed: false },
+    { id: 503, text: "İşbirliği gerektiren bir oyunda liderlik et.", category: 'sosyal', xp: 80, completed: false },
+  ],
+  6: [
+    { id: 601, text: "5 yıl sonraki hayalindeki seni vizyon tahtasına çiz.", category: 'bireysel', xp: 100, completed: false },
+    { id: 602, text: "Gelecek hedefinle ilgili bağımsız bir araştırma yap.", category: 'akademik', xp: 80, completed: false },
+    { id: 603, text: "Mezuniyet sonrası için tek başına bir plan yap.", category: 'bireysel', xp: 90, completed: false },
+  ]
+};
 
 export default function ActivitiesPage() {
   const { user } = useAuth();
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState<{ id: number, text: string, category: Category, xp: number, completed: boolean }[]>([]);
   const [filter, setFilter] = useState<Category | 'all'>('all');
   const [totalXP, setTotalXP] = useState(0);
 
   // Initial check (mock persistence)
   useEffect(() => {
-    // In real app, fetch user task status
-  }, []);
+    if (user?.active_week) {
+      setTasks(weeklyTasks[user.active_week] || weeklyTasks[1]);
+    }
+  }, [user?.active_week]);
 
   const toggleTask = async (id: number) => {
     setTasks(prev => prev.map(t => {

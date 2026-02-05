@@ -90,20 +90,32 @@ router.get('/stats', authMiddleware, async (req, res) => {
 // COMPLETE TASK
 router.post('/complete-task', authMiddleware, async (req, res) => {
     try {
-        const { taskIndex } = req.body;
+        const { taskIndex, taskContent } = req.body;
         const userId = req.user.id;
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
+        // If user has no wheelTasks, they might be starting.
+        // We can either find by index (if populated) or add by content.
         if (user.wheelTasks && user.wheelTasks[taskIndex]) {
             user.wheelTasks[taskIndex].completed = true;
             user.wheelTasks[taskIndex].completedAt = new Date();
             user.total_points = (user.total_points || 0) + 15;
             await user.save();
+        } else if (taskContent) {
+            // New logic: If the task wasn't in DB yet, add it as completed
+            user.wheelTasks.push({
+                task: taskContent,
+                completed: true,
+                completedAt: new Date(),
+                addedAt: new Date()
+            });
+            user.total_points = (user.total_points || 0) + 20; // Bonus for wheel completion
+            await user.save();
         }
 
-        res.json({ success: true });
+        res.json({ success: true, totalXP: user.total_points });
 
     } catch (error) {
         console.error('Complete Task Error:', error);

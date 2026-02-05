@@ -91,7 +91,8 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
                 tests: scores.filter(s => s.test_type === 'BSO' || s.test_type === 'WEEKLY').length,
                 games: scores.filter(s => s.test_type === 'GAME').length,
                 journals: interactions.filter(i => i.action_type === 'journal_entry').length,
-                totalXP: child.total_points || 0
+                totalXP: child.total_points || 0,
+                usageMinutes: child.totalTimeSpent || 0
             };
 
             // Calculate factors

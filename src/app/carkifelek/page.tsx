@@ -8,16 +8,44 @@ import Link from 'next/link';
 import Confetti from 'react-confetti';
 import api from '../lib/api';
 
-const activities = [
-  { name: 'Bireysel Zaman', color: '#6366f1', icon: '🧘', desc: 'Kendinle baş başa kal. Kitap oku, müzik dinle veya sadece dinlen.' },
-  { name: 'Sosyal Bağ', color: '#ec4899', icon: '👥', desc: 'Bir arkadaşını ara veya ailenle kaliteli zaman geçir.' },
-  { name: 'Duygu Analizi', color: '#8b5cf6', icon: '📝', desc: 'Bugün hissettiklerini bir günlüğe yaz. Duygularını tanı.' },
-  { name: 'Akademik Odak', color: '#10b981', icon: '📚', desc: 'Derslerine veya yeni bir beceri öğrenmeye 30 dakika ayır.' },
-  { name: 'Özgüven', color: '#f59e0b', icon: '🦁', desc: 'Başardığın 3 şeyi listele ve kendine teşekkür et.' },
-  { name: 'Açık İletişim', color: '#3b82f6', icon: '💬', desc: 'Birine söylemekte zorlandığın bir şeyi nazikçe ifade et.' },
-  { name: 'Sorumluluk', color: '#14b8a6', icon: '✨', desc: 'Odanı topla veya ertelediğin bir görevi tamamla.' },
-  { name: 'Keşif', color: '#f43f5e', icon: '🔭', desc: 'Daha önce gitmediğin bir yere git veya yeni bir müzik türü dene.' }
-];
+const weeklyActivities: Record<number, { name: string, color: string, icon: string, desc: string }[]> = {
+  1: [
+    { name: 'Ayna Karşısında', color: '#6366f1', icon: '🪞', desc: 'Aynada kendine bak ve sadece sana ait olan 3 fiziksel özelliği sesli söyle.' },
+    { name: 'Kıyafet Seçimi', color: '#ec4899', icon: '👕', desc: 'Bugün kimseye sormadan, tamamen kendi istediğin kombini oluştur.' },
+    { name: 'Hobini Keşfet', color: '#8b5cf6', icon: '🎨', desc: 'Daha önce denemediğin bir sanat dalını 15 dakika araştır.' },
+    { name: 'Bağımsız Karar', color: '#10b981', icon: '⚖️', desc: 'Gün içinde en az bir küçük kararı ikizine danışmadan tek başına al.' },
+  ],
+  2: [
+    { name: 'Özel Köşe', color: '#f59e0b', icon: '🏠', desc: 'Odanın bir kısmını sadece kendi eşyalarınla düzenle.' },
+    { name: 'Hayır Diyebilmek', color: '#3b82f6', icon: '🛡️', desc: 'Bugün sınırlarını ihlal eden birine nazikçe ama net bir hayır de.' },
+    { name: 'Farklı Arkadaş', color: '#14b8a6', icon: '👥', desc: 'İkizinin tanımadığı veya pek konuşmadığı bir arkadaşına mesaj at.' },
+    { name: 'Mahremiyet', color: '#f43f5e', icon: '🔐', desc: 'Günlüğüne sadece senin bildiğin bir sırrını yaz.' },
+  ],
+  3: [
+    { name: 'Duygu Dedektifi', color: '#6366f1', icon: '🕵️', desc: 'Hissettiğin bir duygunun ikizinden mi geçtiğini yoksa senin mi olduğunu bul.' },
+    { name: 'Kendi Başına', color: '#ec4899', icon: '🚶', desc: 'İkizin olmadan 15 dakikalık bir yürüyüşe çık.' },
+    { name: 'Müzik Tercihi', color: '#8b5cf6', icon: '🎧', desc: 'İkizinin pek sevmediği ama senin sevdiğin bir albümü dinle.' },
+    { name: 'Duygusal Sınır', color: '#10b981', icon: '🧱', desc: 'İkizin üzgünken onun duygusuna boğulmadan ona destek ol.' },
+  ],
+  4: [
+    { name: 'Kendi Tempon', color: '#f59e0b', icon: '⏳', desc: 'Bugün ders çalışırken kendi odaklanma süreni belirle ve uygula.' },
+    { name: 'Akademik İlgi', color: '#3b82f6', icon: '📚', desc: 'Sadece senin ilgi duyduğun bir bilimsel konuyu araştır.' },
+    { name: 'Yeni Strateji', color: '#14b8a6', icon: '💡', desc: 'Zorlandığın bir problem için ikizine sormadan yeni bir çözüm dene.' },
+    { name: 'Okuma Saati', color: '#f43f5e', icon: '📖', desc: 'Bireysel gelişim üzerine bir makale veya kitap oku.' },
+  ],
+  5: [
+    { name: 'Ben Dili', color: '#6366f1', icon: '💬', desc: 'Tartışma anında "Sen böylesin" yerine "Ben şöyle hissediyorum" de.' },
+    { name: 'Adil Paylaşım', color: '#ec4899', icon: '⚖️', desc: 'Ortak bir eşya için önceden yazılı bir kullanım kuralı koy.' },
+    { name: 'Liderlik', color: '#8b5cf6', icon: '👑', desc: 'Grup içinde bir fikri ilk sen ortaya at ve savun.' },
+    { name: 'Uzlaşma', color: '#10b981', icon: '🤝', desc: 'Farklı fikirde olduğunuz bir konuda ortak çözüm değil, orta yol bul.' },
+  ],
+  6: [
+    { name: 'Gelecek Hayali', color: '#f59e0b', icon: '🚀', desc: '5 yıl sonra ikizinden ayrı bir şehirde olduğun başarılı bir anı hayal et.' },
+    { name: 'Kariyer Planı', color: '#3b82f6', icon: '💼', desc: 'Hayalindeki mesleğin bir günlük iş rutinini araştır.' },
+    { name: 'Vizyon Tahtası', color: '#14b8a6', icon: '🖼️', desc: 'Kendi hayallerini temsil eden 3 görsel bul ve telefonuna kaydet.' },
+    { name: 'Özerklik Sözü', color: '#f43f5e', icon: '📜', desc: 'Kendine, her zaman kendi kararlarına güveneceğine dair bir not yaz.' },
+  ]
+};
 
 export default function WheelPage() {
   return (
@@ -29,9 +57,12 @@ export default function WheelPage() {
 
 function WheelContent() {
   const { user } = useAuth();
+  const currentWeek = user?.active_week || 1;
+  const currentActivities = weeklyActivities[currentWeek] || weeklyActivities[1];
+
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<typeof currentActivities[0] | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Added: Save Function
@@ -42,7 +73,11 @@ function WheelContent() {
     setSelectedActivity(null); // Close modal immediately for UX
 
     try {
-      await api.post('/api/profile/complete-task', { taskIndex: activities.indexOf(activityToSave) });
+      await api.post('/api/profile/complete-task', {
+        taskIndex: currentActivities.indexOf(activityToSave),
+        taskContent: activityToSave.name
+      });
+      alert("Görev kabul edildi ve profiline kaydedildi! Başarılar.");
     } catch (e) {
       console.error("Activity Save Failed", e);
     }
@@ -56,16 +91,16 @@ function WheelContent() {
     setSpinning(true);
 
     const randomOffset = Math.random() * 360;
-    const newRotation = rotation + 1800 + randomOffset;
+    const newRotation = rotation + 1440 + randomOffset; // 4 full spins + offset
     setRotation(newRotation);
 
     setTimeout(() => {
       setSpinning(false);
       const normalizedRotation = newRotation % 360;
-      const segmentSize = 360 / activities.length;
-      const index = Math.floor((360 - (normalizedRotation % 360)) / segmentSize) % activities.length;
+      const segmentSize = 360 / currentActivities.length;
+      const index = Math.floor((360 - normalizedRotation) / segmentSize) % currentActivities.length;
 
-      setSelectedActivity(activities[index]);
+      setSelectedActivity(currentActivities[index]);
       setShowConfetti(true);
     }, 4000);
   };
@@ -103,13 +138,13 @@ function WheelContent() {
                 className="w-[320px] h-[320px] md:w-[450px] md:h-[450px] rounded-full relative overflow-hidden"
                 style={{
                   boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
-                  background: `conic-gradient(${activities.map((item, i) =>
-                    `${item.color} ${i * (100 / activities.length)}% ${(i + 1) * (100 / activities.length)}%`
+                  background: `conic-gradient(${currentActivities.map((item, i) =>
+                    `${item.color} ${i * (100 / currentActivities.length)}% ${(i + 1) * (100 / currentActivities.length)}%`
                   ).join(', ')})`
                 }}
               >
-                {activities.map((item, i) => {
-                  const angle = (360 / activities.length) * i + (360 / activities.length / 2);
+                {currentActivities.map((item, i) => {
+                  const angle = (360 / currentActivities.length) * i + (360 / currentActivities.length / 2);
                   return (
                     <div
                       key={i}

@@ -73,4 +73,16 @@ router.post('/update', authMiddleware, async (req, res) => {
     }
 });
 
+// HEARTBEAT (Track time spent)
+router.post('/heartbeat', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        // Increment totalTimeSpent by 1 minute (assuming heartbeat is 1 min)
+        await User.findByIdAndUpdate(userId, { $inc: { totalTimeSpent: 1 } });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Heartbeat failed' });
+    }
+});
+
 module.exports = router;

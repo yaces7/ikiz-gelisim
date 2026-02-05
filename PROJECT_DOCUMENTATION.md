@@ -1,78 +1,127 @@
-# İkiz Gelişim Platformu (İGP) - Kapsamlı Teknik ve Fonksiyonel Proje Raporu
+# İkiz Gelişim Platformu (İGP) - Nihai Teknik, Fonksiyonel ve Vizyoner Proje Raporu
 
-## 1. Proje Vizyonu ve Amacı
-İkiz Gelişim Platformu (İGP), ikiz çocukların birbirlerine olan aşırı bağımlılıklarını (twin-bond) dengelemek, bireysel kimlik farkındalıklarını (individuation) artırmak ve ebeveynlere bu süreçte yapay zeka destekli rehberlik sunmak amacıyla geliştirilmiştir. Platform, oyunlaştırma ve derin öğrenme modellerini kullanarak ergenlik öncesi ikizlerin sağlıklı bireyler olarak yetişmesini hedefler.
+## 1. Giriş ve Vizyon
+İkiz Gelişim Platformu (İGP), dünya üzerindeki ikizlerin ergenlik dönemindeki en büyük zorluklarından biri olan "bireyselleşme" (individuation) sürecini dijital ortamda destekleyen, yapay zeka entegrasyonlu ilk kapsamlı ekosistemdir. İkizler arasındaki "yapışıklık" (twin-bond) durumunu bozmadan, her iki çocuğun da kendi özgün kimliklerini inşa etmelerini sağlayan bilimsel temelli bir yol haritası sunar.
 
----
-
-## 2. Teknik Mimari (Tech Stack)
-
-### 2.1. Frontend
-*   **Framework**: Next.js 14+ (App Router).
-*   **Animasyon**: Framer Motion (Akıcı geçişler ve oyun mekanikleri).
-*   **Veri Görselleştirme**: Chart.js (Gelişim Radarı ve İlerleme Grafikleri).
-*   **State**: React Context API (`AuthContext`).
-
-### 2.2. Backend & Veritabanı
-*   **Runtime**: Node.js & Express.js.
-*   **Veritabanı**: MongoDB.
-*   **AI**: Groq API (Llama-3-70B) ile gerçek zamanlı analiz.
+### 1.1. Temel Problem: İkiz Bağımlılığı
+İkizler çoğu zaman toplum tarafından "tek bir birim" olarak algılanır. Bu durum, çocukların kendi kararlarını alma, kendi sosyal çevrelerini kurma ve kendi duygusal sınırlarını çizme yetilerini köreltir. İGP, bu bağımlılığı ölçülebilir metriklere dökerek yönetilebilir hale getirir.
 
 ---
 
-## 3. Sayfa ve Modül Detayları
+## 2. Teknik Katman Mimarisi (Holistik Görünüm)
 
-### 3.1. Ana Sayfa ve Haftalık Gelişim Programı (`/`)
-Ana sayfa, projenin kalbi olan **6 Haftalık Gelişim Programı**'nı barındırır.
-*   **İşleyiş**: Her hafta bir modüldür. Kullanıcı bir haftaya tıkladığında sayfa otomatik olarak yukarı kayar (Scroll-to-top) ve modül detayı açılır.
-*   **Haftayı Etkinleştir**: Modül içindeki bu buton, kullanıcının `active_week` değerini günceller. Bu seçim, platformdaki tüm testleri, günlük sorularını ve oyun içeriklerini o haftanın temasına göre dinamik olarak değiştirir.
+### 2.1. Frontend: Ultra-Modern Kullanıcı Deneyimi
+*   **Next.js 14+ (App Router)**: Performansı maksimize etmek ve SEO uyumlu bir altyapı sunmak için kullanıldı.
+*   **Arayüz (UI/UX)**: "Glassmorphism" ve "Future Dark" konseptiyle tasarlandı. Amacımız, çocukların platformu bir "ödev" değil, "gelecekten gelen bir oyun" gibi algılamasıdır.
+*   **Dinamik Animasyonlar**: Framer Motion kütüphanesi ile her butonun, her sayfa geçişinin bir ruhu olması sağlandı. Mikro-interaksiyonlar kullanıcı bağlılığını artırır.
+*   **Veri Görselleştirme**: Chart.js ve Custom SVG bileşenleri ile bireyselleşme verileri "Gelişim Radarı" ve "İlerleme Eğrisi" olarak ebeveynlere sunulur.
 
-### 3.2. Çarkıfelek & Seçim Motoru (`ChoiceEngine.tsx`)
-Ana sayfada ve oyun alanında yer alan bu modül, interaktif bir simülasyon motorudur.
-*   **Mantık**: Kullanıcıya günlük hayat senaryoları sunulur (Örn: "İkizin senin yerine karar verdiğinde ne yaparsın?").
-*   **Mekanik**: Her seçeneğin bir "Bireyselleşme Ağırlığı" vardır. Seçim yapıldığında AI tabanlı geri bildirim verilir ve kullanıcının **Bireyselleşme Skoru** anlık olarak güncellenir.
-*   **XP Sistemi**: Her tamamlanan senaryo kullanıcıya XP kazandırır.
+### 2.2. Backend: Güvenli ve Ölçeklenebilir Motor
+*   **Node.js & Express**: Hızlı API yanıt süreleri ve olay döngüsü yönetimi için tercih edildi.
+*   **MongoDB (NoSQL)**: Çocukların günlükleri, test sonuçları ve profil verileri gibi esnek veri yapılarını saklamak için ideal bir yapı sunar.
+*   **JWT & Aile Kodu**: Veri güvenliği için JSON Web Token kullanılırken, `familyCode` mekanizması ile bir aileye ait tüm bireyler güvenli bir "dijital ev" altında toplanır.
 
-### 3.3. Gelişim Laboratuvarı - Testler (`/testler`)
-Her haftaya özel olarak kurgulanmış 3 farklı test içerir (Toplam 18 test).
-*   **Dinamik Yapı**: Sayfa, kullanıcının aktif haftasını kontrol eder ve sadece o haftanın testlerini getirir.
-*   **Puanlama**: Testler sonucunda elde edilen puanlar `Score` tablosuna kaydedilir ve Gelişim Radarı'ndaki ilgili boyutu (Özerklik, Sınırlar vb.) yükseltir.
-
-### 3.4. Duygu Günlüğü (`/gunluk`)
-Çocuğun duygusal dünyasını analiz eden AI modülüdür.
-*   **Rehber Sorular**: Haftanın temasına göre değişen sorular (Örn: "Bugün kendi başına ne karar aldın?") kullanıcıyı yazmaya teşvik eder.
-*   **AI Analizi**: Yazılan metin Groq API'ya gönderilir. AI, metindeki **"Ben vs. Biz"** dengesini ölçer.
-*   **Ebeveyn Gizliliği**: Metnin içeriği ebeveyne gösterilmez; sadece AI tarafından üretilen gelişim raporu ve duygu özeti ebeveyn paneline düşer.
-
-### 3.5. Oyun Alanı (`/oyunlar`)
-Platformda 4 farklı oyun kategorisi bulunur:
-1.  **Sınır Hattı (Swipe Game)**: Kartları sağa/sola kaydırarak (Tinder mekaniği) sınır koyma pratiği yapılır.
-2.  **Aynadaki Fark (Reflex Game)**: Hız bazlı bir oyundur. Ekranda akan kelimelerden sadece "bireysel kimliği" temsil edenlere tıklanır.
-3.  **Mutfak Diplomasisi (Chat Game)**: AI ile chat simülasyonudur. Aile üyeleriyle kurulan diyaloglarda doğru iletişim dilini seçme becerisini ölçer.
-4.  **Sosyal Labirent (Choice Engine)**: Karmaşık sosyal senaryolarda stratejik kararlar alma.
-
-### 3.6. Ebeveyn Paneli (`/ebeveyn`)
-Veriye dayalı ebeveynlik rehberidir.
-*   **Gelişim Radarı**: Çocukların 6 farklı boyuttaki gelişimini karşılaştırmalı olarak gösterir.
-*   **Ebeveyn Notları**: AI, her iki çocuğun verilerini birleştirerek ebeveyne "özel analiz" ve "somut tavsiye" üretir.
-*   **PDF Rapor**: 6 haftalık sürecin çıktısı profesyonel bir rapor formatında indirilebilir.
+### 2.3. AI Core: Yapay Zeka Beyni
+*   **Groq API (Llama 3.3 - 70B)**: Piyasadaki en hızlı ve en yetenekli açık modellerden biri kullanılarak çocuklara gerçek zamanlı analizler sunulur.
+*   **Doğal Dil İşleme (NLP)**: Çocukların yazdığı günlükler üzerinden "Me/We ratio" (Ben/Biz Oranı) tahlili yapılır.
+*   **Uzman Tavsiyesi**: AI, sadece veri toplamaz; toplanan verileri bir çocuk psikoloğu perspektifiyle yorumlayarak ebeveyne somut öneriler verir.
 
 ---
 
-## 4. 6 Haftalık İçerik Müfredatı (Görsel Odaklı)
+## 3. Sayfa ve Fonksiyonel Modül Analizi
 
-| Hafta | Tema | Temel Kazanım |
-| :--- | :--- | :--- |
-| **1** | **Kimlik Gelişimi** | Kendini "biz"den ayırıp "ben" olarak tanımlama. |
-| **2** | **Sosyal İlişkiler** | Bireysel arkadaşlıklar ve fiziksel sınırlar kurma. |
-| **3** | **Duygusal Bağımsızlık** | Başkasının duygusundan etkilenmeme (Ayrışma). |
-| **4** | **Akademik Gelişim** | Kendi öğrenme stilini ve zihnini keşfetme. |
-| **5** | **Çatışma Çözümü** | Kardeş tartışmalarını sağlıklı yönetme ve işbirliği. |
-| **6** | **Gelecek Planlaması** | Bağımsız bir birey olarak gelecek vizyonu kurma. |
+### 3.1. Ana Sayfa (Dashboard)
+Kullanıcının platformdaki durumunu tek bakışta gördüğü kontrol merkezidir.
+*   **Dinamik Kahraman Bölümü**: Kullanıcının seviyesine ve o anki aktif haftasına göre değişen selamlama metinleri.
+*   **Haftalık Program Gridi**: 6 ana gelişim modülünü barındırır.
+    *   **Scroll-to-Top**: Bir haftaya tıklandığında odaklanmayı artırmak için sayfa en üste kayar.
+    *   **Haftayı Etkinleştir**: Bu buton, backend'deki `active_week` değerini günceller ve platformun tüm içeriğini (testler, oyunlar, sorular) o haftanın temasına göre "lock" (kilitleme) sisteminden çıkarır.
+
+### 3.2. Çarkıfelek & Seçim Motoru (Choice Engine)
+Kullanıcıların etik ve sosyal kararlar vermesini sağlayan simülasyon alanıdır.
+*   **Mekanizma**: `ChoiceEngine.tsx` bileşeni, Socket.io (isteğe bağlı) ve REST API ile entegre çalışır.
+*   **Geri Bildirim**: Her seçimden sonra AI, yapılan seçimin bireyselleşme üzerindeki etkisini "Bilge Danışman" diliyle açıklar.
+*   **Puanlama**: Seçeneklerin `autonomy` ve `dependency` ağırlıkları, kullanıcının profilindeki gizli skorları besler.
+
+### 3.3. Karakter Oyunu (Character Discovery)
+Çocuğun kendi kimliğini keşfetme sürecini dijitalleştirir.
+*   **Chat Simülasyonu**: Hazır özellikler seçmek yerine, AI çocuğa soyut sorular sorar (Örn: "Bir süper gücün olsa bu ne olurdu ve neden?").
+*   **Profil Oluşturma**: AI, bu cevaplardan:
+    *   3 Temel Kişilik Özelliği (Personality Trait)
+    *   3 Güçlü Yön (Strengths)
+    *   Bir Avatar Önerisi (Emoji/Character) üretir ve veritabanına kaydeder.
+
+### 3.4. Duygu Günlüğü (Journal System)
+Psikolojik gelişimin en önemli veri kaynağıdır.
+*   **Guided Questions**: Haftalık temaya göre (Örn: Hafta 2 - Sosyal Sınırlar) AI tarafından üretilen sorular.
+*   **Sentiment Analysis**: Yazılan metnin duygusal tonu (Pozitif, Negatif, Nötr) ve skorlaması.
+*   **Individuation Index**: Metinde geçen "ben" ve "biz" kelimelerinin bağlam içindeki kullanımı analiz edilerek çocuğun ne kadar bireyselleştiği saptanır.
+
+### 3.5. Oyun Alanı (GAMES_DATA)
+Eğitimi oyunlaştıran (Edutainment) 4 ana oyun:
+1.  **Sınır Hattı**: "Mahremiyet" temalı senaryolarda doğru sınırı çizme pratiği (Swipe mekaniği).
+2.  **Aynadaki Fark**: "Kimlik farkındalığı" odaklı hız oyunu.
+3.  **Mutfak Diplomasisi**: Aile içi çatışmaları barışçıl ama bireysel çözme üzerine kurulu Chat oyunu.
+4.  **Sosyal Labirent**: Akran baskısına karşı durma ve bireysel seçim yapma simülasyonu.
 
 ---
 
-## 5. Veri ve Güvenlik Altyapısı
-*   **FamilyCode**: Her aile tek bir kod ile birbirine bağlanır.
-*   **XP & Seviye**: Her aktivite (günlük, test, oyun) puan kazandırır.
-*   **İzole Veri**: Günlük içerikleri uçtan uca gizlidir; sadece AI analiz sonuçları ebeveyne iletilir.
+## 4. Ebeveyn Dashboard ve Uzman Görüşü
+
+Ebeveyn paneli, basit bir veri tablosundan ziyade bir "Dijital Psikolog" gibi çalışır.
+*   **Gelişim Radarı**: 6 ana boyutu (Özerklik, Sınırlar, Duygusal Bağımsızlık vb.) radar grafik üzerinde her iki çocuk için karşılaştırmalı gösterir.
+*   **Zaman Takibi (Heartbeat)**: Yeni eklenen `ActivityTracker` bileşeni ile çocukların platformda geçirdiği her dakika ölçülür. Bu veri, ebeveynlere ekran süresi kontrolü için sunulur.
+*   **AI Uzman Notu**: Llama 3 modeli, çocukların tüm aktivitelerini (testler, günlükler, oyun skorları) tek bir context içerisinde okur ve ebeveyne "İkiz 1 şu konuda çok bağımsız ama İkiz 2 hala ondan onay bekliyor" gibi derinlikli analizler sunar.
+*   **Actionable Advice**: Sadece teşhis değil, tedavi önerisi! (Örn: "Bugün İkiz 2'yi tek başına markete gönderin.")
+
+---
+
+## 5. 6 Haftalık Derinlemesine Müfredat
+
+### Hafta 1: Kimlik Gelişimi ve Farkındalık
+**Odak**: "Biz kimiz?"den "Ben kimim?"e geçiş.
+*   **Testler**: Kimlik Aynası, Benlik Algısı, Duygusal Ayrışma.
+*   **AI Sorusu**: "İkizinden bağımsız bir özelliğini anlat."
+
+### Hafta 2: Sosyal İlişkiler ve Sınırlar
+**Odak**: Mahremiyet ve fiziksel sınırların inşası.
+*   **Testler**: Sosyal Çember, Özel Alan ve Mahremiyet, Sosyal Roller.
+*   **Oyunu**: Sınır Hattı.
+
+### Hafta 3: Duygusal Bağımsızlık
+**Odak**: Duygusal bulaşmayı (Contagion) yönetmek.
+*   **Testler**: Duygu Dedektifi, Çatışma Çözme Stili, Kıskançlık ve Takdir.
+*   **AI Sorusu**: "İkizin üzgünken sen neden mutlu olabilirsin?"
+
+### Hafta 4: Akademik ve Bilişsel Gelişim
+**Odak**: Öğrenme stillerindeki bireysellik.
+*   **Testler**: Öğrenme Stili, Dikkat ve Odaklanma, Karar Verme Süreçleri.
+*   **Kazanım**: Kıyaslama baskısından kurtulma.
+
+### Hafta 5: Çatışma Çözümü ve Uyum
+**Odak**: Sağlıklı rekabet ve işbirliği.
+*   **Testler**: Kriz Yönetimi, Empati Sınırı, İşbirliği Yeteneği.
+*   **Oyunu**: Mutfak Diplomasisi.
+
+### Hafta 6: Gelecek Planlaması ve Bireyselleşme
+**Odak**: Mezuniyet ve özerk yaşam vizyonu.
+*   **Testler**: Kariyer ve Hayaller, Değişim ve Dönüşüm, Mezuniyet Hazırlığı.
+*   **Kazanım**: Hayallerin ayrılması.
+
+---
+
+## 6. Veri Güvenliği ve Etik Yaklaşım
+Platform, çocukların "güvenli alanı" olmayı taahhüt eder.
+*   **Gizli Günlük**: Yazılan metinler şifreli saklanır ve ebeveyn tarafından okunamaz. Sadece AI analizi paylaşılır.
+*   **Etik Tasarım**: Bağımlılığı değil, gelişimi ödüllendiren (XP) sistem.
+*   **Transparency**: Her verinin neden toplandığı kullanıcıya (çocuğa) açıklanır.
+
+---
+
+## 7. Gelecek Yol Haritası (Roadmap)
+*   **VR Entegrasyonu**: Bireysel oda simülasyonları.
+*   **Mobil Uygulama**: Anlık bildirimler ve lokasyon bazlı bireysel görevler.
+*   **Eğitmen Paneli**: Danışman psikologların sisteme dahil olması.
+*   **Multi-language Support**: Küresel çapta ikiz ailelerine ulaşım.
+
+---

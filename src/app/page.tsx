@@ -41,7 +41,7 @@ export default function Home() {
   const [progressionWeek, setProgressionWeek] = useState(1);
   const [activeWeek, setActiveWeek] = useState(1);
   const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   useEffect(() => {
     // Check API Status
@@ -65,6 +65,8 @@ export default function Home() {
     try {
       await api.post('/api/progression/select-week', { week: week });
       setActiveWeek(week);
+      // Update global user state so other pages (testler, etc) see it immediately
+      updateUser({ active_week: week });
       // Let user know it's activated
       alert(`Hafta ${week} başarıyla aktif edildi! Artık bu haftanın testlerine ve oyunlarına erişebilirsin.`);
       setSelectedTopicId(null);

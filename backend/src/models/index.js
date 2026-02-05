@@ -25,6 +25,7 @@ const UserSchema = new mongoose.Schema({
         completedAt: { type: Date },
         addedAt: { type: Date, default: Date.now }
     }],
+    totalTimeSpent: { type: Number, default: 0 }, // In minutes
     created_at: { type: Date, default: Date.now },
 }, { timestamps: true });
 

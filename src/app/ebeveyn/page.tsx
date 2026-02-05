@@ -234,6 +234,10 @@ export default function ParentDashboard() {
                         <div className="text-2xl font-black text-white">{(child.journals?.length || 0)}</div>
                         <div className="text-[9px] font-bold text-slate-500 uppercase">Duygu Verisi</div>
                       </div>
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div className="text-2xl font-black text-white">{child.metrics?.usageMinutes || 0}</div>
+                        <div className="text-[9px] font-bold text-slate-500 uppercase">Dakika Kullanım</div>
+                      </div>
                     </div>
                   </div>
 
