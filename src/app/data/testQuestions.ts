@@ -15,7 +15,7 @@ export interface TestModule {
 }
 
 export const allTests: TestModule[] = [
-    // --- WEEK 1: Kimlik Gelişimi ---
+    // --- WEEK 1: Kimlik Gelişimi ve Farkındalık ---
     {
         id: "w1-t1",
         week: 1, order: 1,
@@ -56,7 +56,7 @@ export const allTests: TestModule[] = [
         ]
     },
 
-    // --- WEEK 2: Sosyal Sınırlar ---
+    // --- WEEK 2: Sosyal İlişkiler ve Sınırlar ---
     {
         id: "w2-t1",
         week: 2, order: 1,
@@ -97,7 +97,7 @@ export const allTests: TestModule[] = [
         ]
     },
 
-    // --- WEEK 3: Duygusal Yönetim ---
+    // --- WEEK 3: Duygusal Bağımsızlık ---
     {
         id: "w3-t1",
         week: 3, order: 1,
@@ -138,7 +138,7 @@ export const allTests: TestModule[] = [
         ]
     },
 
-    // --- WEEK 4: Akademik ve Bilişsel ---
+    // --- WEEK 4: Akademik ve Bilişsel Gelişim ---
     {
         id: "w4-t1",
         week: 4, order: 1,
@@ -179,7 +179,7 @@ export const allTests: TestModule[] = [
         ]
     },
 
-    // --- WEEK 5: Problem Çözme ve Uyum ---
+    // --- WEEK 5: Çatışma Çözümü ve Uyum ---
     {
         id: "w5-t1",
         week: 5, order: 1,
@@ -220,7 +220,7 @@ export const allTests: TestModule[] = [
         ]
     },
 
-    // --- WEEK 6: Gelecek Vizyonu ---
+    // --- WEEK 6: Gelecek Planlaması ve Bireyselleşme ---
     {
         id: "w6-t1",
         week: 6, order: 1,
@@ -242,7 +242,7 @@ export const allTests: TestModule[] = [
         questions: [
             { id: 611, text: "Bu süreçte kendini daha iyi tanıdın mı?", options: ["Kesinlikle, farkındalığım arttı", "Genelde evet", "Biraz", "Aynıyım"] },
             { id: 612, text: "Programa başlamadan önce 'biz' diyorken şimdi?", options: ["'Ben' demeyi öğrendim", "'Ben' ve 'Biz' dengelendi", "Hala 'Biz' diyormuşum gibi", "Sıradan bir süreçti"] },
-            { id: 613, text: "En çok hangi modül seni etkiledi?", options: ["Kimlik Gelişimi", "Sosyal Sınırlar", "Gelecek Vizyonu", "Karmaşık Duygular"] },
+            { id: 613, text: "En çok hangi modül seni etkiledi?", options: ["Kimlik Gelişimi", "Sosyal İlişkiler", "Gelecek Planlaması", "Duygusal Bağımsızlık"] },
             { id: 614, text: "Kendini ne kadar cesur hissediyorsun?", options: ["Tek başıma dünyayı fethedecek kadar", "Sevdiklerimle olunca evet", "Normale göre daha iyi", "Çekingen"] },
             { id: 615, text: "Artık başkaları seni karıştırınca?", options: ["Artık bu benim sorunum değil derim", "Daha az bozuluyorum", "Hemen düzeltirim", "Alıştım"] }
         ]
