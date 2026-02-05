@@ -63,12 +63,20 @@ export default function Home() {
 
   const handleSetActiveWeek = async (week: number) => {
     try {
-      await api.post('/api/progression/select-week', { week });
+      await api.post('/api/progression/select-week', { week: week });
       setActiveWeek(week);
-      // Optional: Show success toast
+      // Let user know it's activated
+      alert(`Hafta ${week} başarıyla aktif edildi! Artık bu haftanın testlerine ve oyunlarına erişebilirsin.`);
+      setSelectedTopicId(null);
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleTopicClick = (topicId: string) => {
+    setSelectedTopicId(topicId);
+    // Smooth scroll to top so the modal is perfectly centered and visible
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const selectedTopic = weeksContent.find(w => w.id === selectedTopicId);
@@ -165,14 +173,16 @@ export default function Home() {
               {weeksContent.map((week) => {
                 // Jüri/Demo hesabı için progressionWeek=6 ise tümü açık
                 const isLocked = user ? (week.week > (progressionWeek || 1)) : (week.week > 1);
+                const isActive = activeWeek === week.week;
 
                 return (
                   <div
                     key={week.id}
-                    onClick={() => !isLocked && setSelectedTopicId(week.id)}
+                    onClick={() => !isLocked && handleTopicClick(week.id)}
                     className={`
-                      group relative overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 transition-all duration-300
-                      ${isLocked ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-2 hover:shadow-2xl hover:border-blue-500/30'}
+                      group relative overflow-hidden rounded-2xl bg-slate-900 border transition-all duration-300
+                      ${isLocked ? 'opacity-75 cursor-not-allowed border-slate-800' : 'cursor-pointer hover:-translate-y-2 hover:shadow-2xl hover:border-blue-500/30'}
+                      ${isActive ? 'ring-2 ring-blue-500 border-blue-500/50' : 'border-slate-800'}
                     `}
                   >
                     {/* Image Header */}
@@ -185,8 +195,9 @@ export default function Home() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-80" />
 
-                      <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">
+                      <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20 flex items-center gap-2">
                         <span className="text-xs font-bold text-white uppercase tracking-wider">Hafta {week.week}</span>
+                        {isActive && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]" />}
                       </div>
 
                       {isLocked && (
@@ -317,13 +328,12 @@ export default function Home() {
                 </div>
 
                 <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row gap-4">
-                  <Link
-                    href={`/oyunlar`}
-                    onClick={() => setSelectedTopicId(null)}
+                  <button
+                    onClick={() => handleSetActiveWeek(selectedTopic.week)}
                     className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl text-center font-bold text-white shadow-xl shadow-blue-900/20 hover:opacity-90 transition-all"
                   >
-                    Oyun Alanına Git
-                  </Link>
+                    HAFTAYI ETKİNLEŞTİR
+                  </button>
                   <button
                     onClick={() => setSelectedTopicId(null)}
                     className="flex-1 py-4 bg-slate-800 rounded-xl text-center font-bold text-slate-300 hover:bg-slate-700 transition-all"

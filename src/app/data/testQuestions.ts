@@ -6,7 +6,7 @@ export interface Question {
 }
 
 export interface TestModule {
-    id: string; // Unique ID formatted as w{week}-t{order} e.g. w1-t1
+    id: string; // Unique ID formatted as w{week}-t{order}
     week: number;
     order: number;
     title: string;
@@ -15,182 +15,249 @@ export interface TestModule {
 }
 
 export const allTests: TestModule[] = [
-    // --- WEEK 1 ---
+    // --- WEEK 1: Kimlik Gelişimi ---
     {
         id: "w1-t1",
-        week: 1,
-        order: 1,
-        title: "Test 1: İkiz Bağı Farkındalığı",
-        description: "İkizinle olan bağının derinliğini ve sınırlarını keşfet.",
+        week: 1, order: 1,
+        title: "Test 1: Kimlik Aynası",
+        description: "Kendini ikizinden bağımsız bir birey olarak nasıl tanımlıyorsun?",
         questions: [
-            { id: 101, text: "İkizinle aynı kıyafeti giymekten ne kadar hoşlanırsın?", options: ["Hiç hoşlanmam", "Bazen uyarım", "Farketmez", "Çok severim"] },
-            { id: 102, text: "Biri sizi karıştırdığında ne hissedersin?", options: ["Kızarım", "Düzeltirim", "Güler geçerim", "Hoşuma gider"] },
-            { id: 103, text: "Kendi başına bir karar alırken ikizine danışma ihtiyacı duyar mısın?", options: ["Asla", "Nadiren", "Sık sık", "Her zaman"] },
-            { id: 104, text: "İkizin olmadan bir sosyal ortama girdiğinde kendini nasıl hissedersin?", options: ["Çok rahat", "Biraz eksik", "Gergin", "Girmem"] },
-            { id: 105, text: "İkizinizle aranızda gizli bir dil var mı?", options: ["Yok", "Birkaç kelime", "Bazen anlaşırız", "Evet, sürekli"] }
+            { id: 101, text: "Aynaya baktığında ilk gördüğün şey nedir?", options: ["Kendi özgün yüzüm", "Kardeşimle benzerliğim", "İkimizden bir parça", "Sadece bir çocuk"] },
+            { id: 102, text: "İsminle hitap edildiğinde ne hissedersin?", options: ["Değerli ve özel", "Normal", "Bazen 'ikizler' denmesini bekliyorum", "Fark etmez"] },
+            { id: 103, text: "En sevdiğin renk ikizinin nefret ettiği bir renk olsa giyer misin?", options: ["Gururla giyerim", "Belki giyerim", "Onu kırmamak için giymem", "Genelde aynı renk giyeriz"] },
+            { id: 104, text: "Kendi başına bir hobi seçerken hangisi daha önemli?", options: ["Tamamen benim sevmem", "İkizimin de katılması", "Ortak bir ilgi olması", "Onun seçmesi"] },
+            { id: 105, text: "Başkaları seni 'diğer yarın' diye tanımladığında ne hissedersin?", options: ["Ben tam bir bireyim", "Biraz hoşuma gider", "Alıştım artık", "Kendimi öyle hissediyorum"] }
         ]
     },
     {
         id: "w1-t2",
-        week: 1,
-        order: 2,
-        title: "Test 2: Bireysel Kimlik Algısı",
-        description: "Kendini 'biz'den ayrı bir 'ben' olarak görebiliyor musun?",
+        week: 1, order: 2,
+        title: "Test 2: Benlik Algısı",
+        description: "Kendi kararlarını alma ve özgünlük seviyeni ölç.",
         questions: [
-            { id: 111, text: "Kendi ismin yerine 'ikizler' diye çağrılmak seni rahatsız eder mi?", options: ["Çok", "Bazen", "Az", "Etmez"] },
-            { id: 112, text: "Farklı hobiler edinmek sizin için ne kadar kolay?", options: ["Çok kolay", "Denedim ama bıraktım", "Zor", "İstemem"] },
-            { id: 113, text: "İkizinin başarısını tamamen kendi başarınız gibi hisseder misiniz?", options: ["Hayır, o onun", "Kısmen", "Evet", "Kesinlikle"] },
-            { id: 114, text: "Gelecek hayallerin ikizinden ne kadar bağımsız?", options: ["Tamamen farklı", "Benzer yönler var", "Çoğu ortak", "Birebir aynı"] },
-            { id: 115, text: "Yalnız başına vakit geçirmekten keyif alır mısın?", options: ["Çok", "Bazen", "Nadiren", "Sıkılırım"] }
+            { id: 111, text: "Bir yemeği denemeden önce ikizinin beğenmesini bekler misin?", options: ["Hayır, tadına bakarım", "Bazen sorarım", "Onun zevkine güvenirim", "O ne yerse onu yerim"] },
+            { id: 112, text: "Kendi tarzını yaratmak sence ne kadar önemli?", options: ["Hayatımdaki en önemli şey", "Zaman zaman önemli", "Gereksiz bir çaba", "Benzerlik daha güzel"] },
+            { id: 113, text: "İkizinden farklı bir sınıfta olsaydın ne hissederdin?", options: ["Özgür ve bağımsız", "Biraz heyecanlı", "Endişeli ve yalnız", "Çok korkunç"] },
+            { id: 114, text: "Hayallerini kurarken 'biz' mi diyorsun 'ben' mi?", options: ["Hep 'ben'", "Çoğunlukla 'ben'", "Bazen 'biz'", "Her zaman 'biz'"] },
+            { id: 115, text: "Kendi yeteneklerini onunkinden üstün gördüğünde suçluluk duyar mısın?", options: ["Hayır, her birey farklıdır", "Azıcık duyabilirim", "Evet, üzülürüm", "Onu geçersem saklarım"] }
         ]
     },
     {
         id: "w1-t3",
-        week: 1,
-        order: 3,
-        title: "Test 3: Duygusal Yansıtma",
-        description: "Duyguların sana mı ait yoksa kardeşine mi?",
+        week: 1, order: 3,
+        title: "Test 3: Duygusal Ayrışma",
+        description: "Kendi duygularını başkasınınkinden ayırabiliyor musun?",
         questions: [
-            { id: 121, text: "İkizin üzgünken sebebini bilmesen de üzülür müsün?", options: ["Hayır", "Biraz", "Çoğunlukla", "Her zaman"] },
-            { id: 122, text: "Onun fiziksel acısını hissettiğin olur mu?", options: ["Asla", "Çok nadir", "Bazen", "Sık sık"] },
-            { id: 123, text: "Duygusal bir karar verirken önce onun ne hissedeceğini mi düşünürsün?", options: ["Hayır, kendimi", "Bazen", "Genelde", "Evet"] },
-            { id: 124, text: "Birbirinizin cümlelerini tamamlar mısınız?", options: ["Hiç", "Nadiren", "Sık", "Sürekli"] },
-            { id: 125, text: "Rüyalarınızın benzediği olur mu?", options: ["Hayır", "Çok nadir", "Bazen", "Evet"] }
+            { id: 121, text: "İkizin ağladığında sen de ağlamaya başlar mısın?", options: ["Hayır, nedenini sorarım", "Empati kurarım ama ağlamam", "Gözlerim dolar", "Hemen ağlarım"] },
+            { id: 122, text: "Onun başardığı bir şeye içtenlikle sevinebilir misin?", options: ["Evet, onun adına sevinirim", "Güzel ama keşke ben de yapsaydım", "Biraz kıskanırım", "Kendi başarım sayarım"] },
+            { id: 123, text: "Duygularını ifade ederken zorlanır mısın?", options: ["Hayır, çok netim", "Yazarak daha iyi", "Zaman zaman", "O benim yerime söyler"] },
+            { id: 124, text: "Fiziksel bir acı hissettiğinde ikizinin de hissettiğini düşünür müsün?", options: ["Asla", "Çok nadir", "Bazen", "Evet, her zaman"] },
+            { id: 125, text: "Kendi başına uyurken korkar mısın?", options: ["Hayır, çok rahatım", "Bazen ışığı açarım", "Onun varlığına alıştım", "Asla tek uyumam"] }
         ]
     },
 
-    // --- WEEK 2 ---
+    // --- WEEK 2: Sosyal Sınırlar ---
     {
         id: "w2-t1",
-        week: 2,
-        order: 1,
-        title: "Test 1: Fiziksel Sınırlar",
-        description: "Özel alanını ve sınırlarını koruyabiliyor musun?",
+        week: 2, order: 1,
+        title: "Test 1: Sosyal Çember",
+        description: "Arkadaşlık ilişkilerindeki bağımsızlığını test et.",
         questions: [
-            { id: 201, text: "Odanızın kapısını kilitler misin?", options: ["Sık sık", "Bazen", "Gerek yok", "Kapımız hep açık"] },
-            { id: 202, text: "İkizin eşyalarını izinsiz aldığında tepkin ne olur?", options: ["Çok sert uyarırım", "İsterse veririm", "Görmezden gelirim", "Her şeyimiz ortak"] },
-            { id: 203, text: "Kıyafet dolaplarınız ayrılması teklif edilse?", options: ["Hemen kabul ederim", "Olabilir", "Gerek yok", "İstemem"] },
-            { id: 204, text: "Telefonda özel konuşurken odayı terk eder misin?", options: ["Evet", "Bazen", "Hayır gerek yok", "Asla"] },
-            { id: 205, text: "Günlüğünü ondan saklar mısın?", options: ["Evet, kilitli", "Saklarım", "Okusa da olur", "Ortak günlük"] }
+            { id: 201, text: "İkizinin tanımadığı kaç arkadaşın var?", options: ["Çok fazla", "Birkaç tane", "Hepsini tanıyor", "Sadece ortak arkadaşlarımız var"] },
+            { id: 202, text: "İkizin olmadan bir doğum günü partisine gitmek sence nasıl?", options: ["Çok eğlenceli ve özgür", "Güzel olabilir", "Biraz garip", "Gitmem"] },
+            { id: 203, text: "Arkadaşların seni ikizinle karıştırınca tepkin ne olur?", options: ["Hemen uyarırım", "Gülerek düzeltirim", "Alıştım, takmam", "Cevap bile vermem"] },
+            { id: 204, text: "Sosyal medyada (olsa) ayrı hesap açmak istenir mi?", options: ["Kesinlikle evet", "Olabilir", "Ortak hesap daha iyi", "Ayırmaya gerek yok"] },
+            { id: 205, text: "Hangi arkadaşınla daha çok vakit geçiriyorsun?", options: ["En iyi kendi arkadaşımla", "Ortak arkadaşla", "Sadece ikizimle", "Kimseyle"] }
         ]
     },
     {
         id: "w2-t2",
-        week: 2,
-        order: 2,
-        title: "Test 2: Mahremiyet Algısı",
-        description: "Gizlilik ve paylaşım dengesi.",
+        week: 2, order: 2,
+        title: "Test 2: Özel Alan ve Mahremiyet",
+        description: "Sınırlarını ne kadar net çizebiliyorsun?",
         questions: [
-            { id: 211, text: "Banyodayken ikizinin girmesine izin verir misin?", options: ["Asla", "Acilse", "Bazen", "Sorun değil"] },
-            { id: 212, text: "Sana ait bir sırrı başkasına söylese?", options: ["Asla affetmem", "Kızarım", "Üzülürüm", "Sorun olmaz"] },
-            { id: 213, text: "Sosyal medya şifrelerini biliyor mu?", options: ["Hayır", "Bazılarını", "Evet", "Ortak hesap"] },
-            { id: 214, text: "Arkadaşlarınla buluşurken ikizinin gelmesini ister misin?", options: ["Hayır, özel zaman", "Bazen", "Genelde", "Hep birlikteyiz"] },
-            { id: 215, text: "Doktor randevusuna yalnız gitmeyi mi tercih edersin?", options: ["Evet", "Farketmez", "Hayır, gelmeli", "Korkarım yalnız"] }
+            { id: 211, text: "Odanızın kapısını kapatma ihtiyacı duyar mısın?", options: ["Evet, her zaman", "Bazen yalnız kalmak için", "Genelde açık", "Hiç kapatmam"] },
+            { id: 212, text: "İkizin günlüğünü okusa ne yapardın?", options: ["Çok büyük bir olay olur", "Kızarım ama affederim", "Sırrım yok, okusun", "Zaten beraber tutuyoruz"] },
+            { id: 213, text: "Eşyalarını (kıyafet vb) izinsiz almasına ne dersin?", options: ["Asla kabul etmem", "Sorması lazım", "Bir şey demem", "Her şeyimiz ortak zaten"] },
+            { id: 214, text: "Telefonda özel bir konuşma yaparken odadan çıkar mı?", options: ["Evet, mutlaka", "Bazen", "Gerek yok", "Her şeyi duyar"] },
+            { id: 215, text: "İkizine 'hayır' demek senin için ne kadar zor?", options: ["Hiç zor değil", "Biraz zorlanırım", "Vicdan yaparım", "Asla hayır diyemem"] }
         ]
     },
     {
         id: "w2-t3",
-        week: 2,
-        order: 3,
-        title: "Test 3: 'Hayır' Diyebilme",
-        description: "İstemediğin durumlarda sınır koyma becerisi.",
+        week: 2, order: 3,
+        title: "Test 3: Sosyal Roller",
+        description: "Takım içinde bir 'parça' mısın yoksa 'ana karakter' mi?",
         questions: [
-            { id: 221, text: "İkizinin senin yerine karar vermesi seni rahatsız eder mi?", options: ["Çok eder", "Biraz", "Yükümü hafifletir", "Hoşuma gider"] },
-            { id: 222, text: "Sınırlarını ihlal ettiğinde bunu ona söyleyebiliyor musun?", options: ["Hemen", "Zorlanarak", "Dolaylı yoldan", "Söylemem"] },
-            { id: 223, text: "Onun istediği bir şeyi yapmak istemediğinde reddedebilir misin?", options: ["Kolayca", "Bahane bularak", "Zorlanırım", "Reddedemem"] },
-            { id: 224, text: "Senin fikrin sorulmadan yapılan plana uyar mısın?", options: ["İtiraz ederim", "Homurdanırım", "Uyarım", "Sevinirim"] },
-            { id: 225, text: "Kendini suçlu hissetmeden ona 'hayır' diyebilir misin?", options: ["Evet", "Bazen", "Nadiren", "Asla"] }
+            { id: 221, text: "Grup çalışmalarında ikizinle aynı grupta mı olmak istersin?", options: ["Hayır, farklı gruplar", "Fark etmez", "Evet, daha güvenli", "Onsuz grup çalışamam"] },
+            { id: 222, text: "Liderlik rolünü kim üstlenir?", options: ["Ben kendi alanımda liderim", "İkimiz de lideriz", "Daha çok o", "Her zaman o"] },
+            { id: 223, text: "Okulda öğretmenlerin seni isminle mi çağırıyor?", options: ["Evet, hep", "Çoğunlukla", "Bazen 'diğer ikiz'", "Hep karıştırıyorlar"] },
+            { id: 224, text: "Yeni bir ortama girince ilk kim konuşur?", options: ["Ben atılırım", "Sırayla", "Genelde o", "O konuşsun ben beklerim"] },
+            { id: 225, text: "Kendi fikirlerini savunurken ne kadar cesursun?", options: ["Kim olursa olsun savunurum", "Genelde ama zorlanırım", "İkizim yanımdayken evet", "Sessiz kalırım"] }
         ]
     },
 
-    // --- WEEK 3 ---
+    // --- WEEK 3: Duygusal Yönetim ---
     {
         id: "w3-t1",
-        week: 3,
-        order: 1,
-        title: "Test 1: Arkadaşlık İlişkileri",
-        description: "Sosyal çevren ne kadar bağımsız?",
+        week: 3, order: 1,
+        title: "Test 1: Duygu Dedektifi",
+        description: "Kendi hislerinin kaynağını bul.",
         questions: [
-            { id: 301, text: "Sadece sana ait (ikizinin tanımadığı) arkadaşların var mı?", options: ["Çok var", "Birkaç tane", "Yok ama istiyorum", "Gerek yok"] },
-            { id: 302, text: "Bir partide ikizinden ayrı takılabilir misin?", options: ["Evet, dağılırım", "Kısa süre", "Gözüm onu arar", "Yanından ayrılmam"] },
-            { id: 303, text: "İkizinin sevmediği bir arkadaşınla görüşmeye devam eder misin?", options: ["Elbette", "Gizli görüşürüm", "Azaltırım", "Kesinlikle hayır"] },
-            { id: 304, text: "Arkadaş grubunda 'ikizler' diye çağrılmak rahatsız eder mi?", options: ["Çok", "Biraz", "Alıştım", "Hoşuma gider"] },
-            { id: 305, text: "Yeni biriyle tanışırken kendini 'ikiz' olarak mı tanıtırsın?", options: ["İsmimle", "Sonradan söylerim", "Bazen", "Hemen söylerim"] }
+            { id: 301, text: "Kötü bir gün geçirdiğinde ikizine anlatır mısın?", options: ["Hemen", "Bir süre beklerim", "Bazen saklarım", "O zaten anlar, anlatmam"] },
+            { id: 302, text: "O bir tartışmada haksızsa onu savunur musun?", options: ["Hayır, hatasını söylerim", "Başbaşa kalınca söylerim", "Yine de savunurum", "Ne yaparsa arkasındayım"] },
+            { id: 303, text: "Kendi başına ağlamak seni korkutur mu?", options: ["Hayır, bazen gerekli", "Biraz yalnız hissederim", "Onun yanımda olmasını isterim", "Asla tek ağlamam"] },
+            { id: 304, text: "Mutluluğunu paylaşmak için ilk kime koşarsın?", options: ["Arkadaşıma/Aileme", "İkizime", "Kimseye", "Bağırırım"] },
+            { id: 305, text: "Duyguların ikizinin ruh haline göre mi şekillenir?", options: ["Asla, ben hep benimdir", "Biraz etkilenirim", "Çoğunlukla evet", "O nasılsa ben de öyleyim"] }
         ]
     },
     {
         id: "w3-t2",
-        week: 3,
-        order: 2,
-        title: "Test 2: Sosyal Rekabet",
-        description: "Sosyal ortamlarda kıyaslama ve rekabet.",
+        week: 3, order: 2,
+        title: "Test 2: Çatışma Çözme Stili",
+        description: "Tartışmaların ne kadar sağlıklı?",
         questions: [
-            { id: 311, text: "Başkalarının sizi kıyaslamasına nasıl tepki verirsin?", options: ["Sustururum", "Umursamam", "Rahatsız olurum", "Doğal karşılarım"] },
-            { id: 312, text: "İkizinle rekabet eder misin?", options: ["Hayır", "Tatlı bir rekabet", "Bazen sert", "Evet, sürekli"] },
-            { id: 313, text: "O daha popüler olursa kıskanır mısın?", options: ["Hayır, sevinirim", "Biraz imrenirim", "Kıskanırım", "Çok bozulurum"] },
-            { id: 314, text: "Bir ortamda ilgi odağı o olunca ne yaparsın?", options: ["Onu izlerim", "Kendi sohbetime bakarım", "Araya girerim", "Kenara çekilirim"] },
-            { id: 315, text: "Aynı kişiden hoşlandığınız oldu mu?", options: ["Asla", "Nadiren", "Oldu", "Sık sık"] }
+            { id: 311, text: "Tartışınca ilk kim özür diler?", options: ["Hatası olan", "Kim daha önce sakinleşirse", "Hep ben", "Hep o"] },
+            { id: 312, text: "Birbirinize küstüğünüzde ne kadar sürer?", options: ["5 dakika", "Birkaç saat", "Bütün gün", "Haftalar sürer"] },
+            { id: 313, text: "Kavga edince fiziksel temas kurar mısınız?", options: ["Asla, sadece konuşuruz", "Bazen itişiriz", "Sert tartışırız", "Çok şiddetli"] },
+            { id: 314, text: "Ebeveynleriniz tartışmanıza müdahale etmeli mi?", options: ["Hayır, kendimiz çözeriz", "Sadece çok büyürse", "Evet, hakem olmalılar", "Her tartışmada yardıma gelirler"] },
+            { id: 315, text: "Tartıştıktan sonra ayrılmak ister misin?", options: ["Kendi odama giderim", "Bir süre sessiz kalırım", "Ondan uzaklaşamam", "Yan yana durup somurturuz"] }
         ]
     },
     {
         id: "w3-t3",
-        week: 3,
-        order: 3,
-        title: "Test 3: İletişim Becerileri",
-        description: "Kendini ifade etme gücün.",
+        week: 3, order: 3,
+        title: "Test 3: Kıskançlık ve Takdir",
+        description: "Rekabetin rengini keşfet.",
         questions: [
-            { id: 321, text: "Topluluk önünde konuşurken ikizinden destek bekler misin?", options: ["Hayır", "Göz teması kurarım", "Evet", "O konuşsun isterim"] },
-            { id: 322, text: "Duygularını sözlü olarak ifade etmekte zorlanır mısın?", options: ["Hayır", "Bazen", "Evet", "Çok"] },
-            { id: 323, text: "Tartışmalarda kendi fikrini savunabilir misin?", options: ["Sonuna kadar", "Genelde", "Çekinirim", "Susarım"] },
-            { id: 324, text: "Hayır derken açıklama yapma gereği duyar mısın?", options: ["Hayır", "Bazen", "Evet", "Hep"] },
-            { id: 325, text: "İkizin senin yerine cevap verdiğinde ne yaparsın?", options: ["Onu düzeltirim", "Sonra uyarırım", "Rahatsız olurum ama susarım", "Memnun olurum"] }
+            { id: 321, text: "İkizine birisi iltifat ettiğinde ne hissedersin?", options: ["Gurur duyarım", "Benim için de geçerli sayarım", "Keşke bana da deseler", "Kıskanırım"] },
+            { id: 322, text: "Ona alınan bir hediyeyi daha çok beğensen ne yaparsın?", options: ["Onun adına mutlu olurum", "Değişmeyi teklif ederim", "Sussam da üzülürüm", "Hemen kavga çıkarırım"] },
+            { id: 323, text: "Sizce hanginiz daha popüler?", options: ["İkimiz de farklı çevrelerde", "Popülerliğe önem vermem", "O daha popüler", "Ben daha popülerim"] },
+            { id: 324, text: "Aynı alanda (örn. Matematik) yarışmak sizi nasıl etkiler?", options: ["Birbirimizi geliştiririz", "Heyecan verir", "Gerilim yaratır", "Asla aynı alanda yarışmayız"] },
+            { id: 325, text: "Gelecekte ikizinden daha başarılı olursan?", options: ["Onu da desteklerim", "Hakkımdır sevinirim", "Ona karşı mahcup hissederim", "Başarımı saklarım"] }
         ]
     },
 
-    // --- WEEK 4, 5, 6 için placeholdar/kopya yapı (Veri tabanı çok şişmesin diye örnekleri çoğaltıyorum) --- 
-    // Gerçek uygulamada bunların hepsi özgün olmalı. Demo için Week 6'yı da dolduruyorum.
+    // --- WEEK 4: Akademik ve Bilişsel ---
+    {
+        id: "w4-t1",
+        week: 4, order: 1,
+        title: "Test 1: Öğrenme Stili",
+        description: "Bilgiyi nasıl işlediğini keşfet.",
+        questions: [
+            { id: 401, text: "Ders çalışırken yanınızda birinin olmasını ister misin?", options: ["Asla, yalnız daha iyiyim", "Bazen sessizce olabilir", "İkizim yanımda olmalı", "Mutlaka beraber çalışırız"] },
+            { id: 402, text: "Bir konuyu en iyi nasıl anlarsın?", options: ["Okuyarak ve not tutarak", "Dinleyerek", "Yaparak ve yaşayarak", "İkizimin anlatmasıyla"] },
+            { id: 403, text: "Farklı bir sınıfta olsaydın notların nasıl olurdu?", options: ["Daha iyi olurdu", "Fark etmezdi", "Biraz düşerdi", "Okula bile gitmek istemezdim"] },
+            { id: 404, text: "Öğretmenin bir hata yaptığında uyarır mısın?", options: ["Hemen uyarırım", "İkizime sorarım doğru mu diye", "Kimse duymazken söylerim", "Asla uyarmam"] },
+            { id: 405, text: "Sınav başarını neye borçlusun?", options: ["Kendi azmime", "İkizimle çalışmama", "Şansa", "Ona"] }
+        ]
+    },
+    {
+        id: "w4-t2",
+        week: 4, order: 2,
+        title: "Test 2: Dikkat ve Odaklanma",
+        description: "Bireysel konsantrasyon gücünü ölç.",
+        questions: [
+            { id: 411, text: "İkizin başka bir işle uğraşırken sen ders çalışabilir misin?", options: ["Çok rahat", "Biraz zorlanarak", "Dikkatim dağılır", "Bırakıp yanına giderim"] },
+            { id: 412, text: "Okuduğun bir kitabı ikizine anlatırken ne hissedersin?", options: ["Kendi yorumumu katarım", "Özetini geçerim", "Onun da okumasını beklerim", "Sıkılırım, anlatmam"] },
+            { id: 413, text: "Bulmaca çözerken yardım ister misin?", options: ["Son ana kadar uğraşırım", "Zorlanınca ikizime sorarım", "Ebeveynime sorarım", "Hemen yardım isterim"] },
+            { id: 414, text: "Kendi başına yeni bir dil veya beceri öğrenmek sence?", options: ["Harika bir fikir", "Zaman alır ama yaparım", "Zor ve sıkıcı", "İkizim yoksa öğrenmem"] },
+            { id: 415, text: "Zaman yönetimin nasıldır?", options: ["Kendi planımı yaparım", "Onun planına uyarım", "Doğaçlama", "Her şeyi son ana bırakırız"] }
+        ]
+    },
+    {
+        id: "w4-t3",
+        week: 4, order: 3,
+        title: "Test 3: Karar Verme Süreçleri",
+        description: "Kritik anlardaki bağımsızlığın.",
+        questions: [
+            { id: 421, text: "Önemli bir karar alırken ilk kimin fikrini sorarsın?", options: ["Kendi iç sesimin", "Dijital rehberlerin", "Ebeveynimin", "İkizimin"] },
+            { id: 422, text: "Hata yaptığında sorumluluğu üstlenir misin?", options: ["Evet, tamamen bana ait", "Kısmen kadere atarım", "Beraber yaptık derim", "Onun üzerine atarım"] },
+            { id: 423, text: "Bir oyunun kurallarını kim belirler?", options: ["Kurallara hepimiz uyarız", "Fikrimi söylerim", "O ne derse o olur", "Kuralları sevmem"] },
+            { id: 424, text: "Yeni bir teknolojik aleti ilk kim kullanır?", options: ["Ben, keşfetmeyi severim", "Kurcalayarak öğrenirim", "İkizimin çözmesini beklerim", "Babamın/Annemin"] },
+            { id: 425, text: "Risk almayı sever misin?", options: ["Evet, heyecan verici", "Ölçülü riskler", "Asla risk almam", "İkizim alıyorsa alırım"] }
+        ]
+    },
 
-    // --- WEEK 6 ---
+    // --- WEEK 5: Problem Çözme ve Uyum ---
+    {
+        id: "w5-t1",
+        week: 5, order: 1,
+        title: "Test 1: Kriz Yönetimi",
+        description: "Baskı altında nasıl davranıyorsun?",
+        questions: [
+            { id: 501, text: "Bir oyuncağınız bozulduğunda ilk ne yaparsın?", options: ["Tamir etmeye çalışırım", "Yeni aldırırım", "Ağlarım", "İkizime veririm o yapsın"] },
+            { id: 502, text: "Yolunuzu kaybettiğinizde tepkin ne olur?", options: ["Haritaya bakarım/Sorarım", "Sakin kalmaya çalışırım", "Panik yaparım", "İkizimin arkasına saklanırım"] },
+            { id: 503, text: "İkizin bir kaza yapsa (ufak bir düşme gibi) ilk tepkin?", options: ["Hemen yardım ederim", "Sakinleştiririm", "Ben de panik yaparım", "Gülürüm/Kızarım"] },
+            { id: 504, text: "Para biriktirme konusunda nasılsın?", options: ["Kendi kumbaram var", "Bazen harcarım", "Ortak kumbara", "Hiç param yok"] },
+            { id: 505, text: "Planlar bozulunca ne yaparsın?", options: ["Yeni plan yaparım", "Keyfim kaçar", "Ona sorarım ne yapalım diye", "Günü boş geçiririm"] }
+        ]
+    },
+    {
+        id: "w5-t2",
+        week: 5, order: 2,
+        title: "Test 2: Empati ve Empati Sınırı",
+        description: "Anlayış ve bireysellik dengesi.",
+        questions: [
+            { id: 511, text: "İkizinin bir sırrını bilmek seni rahatsız eder mi?", options: ["Hayır, bilmeliyim", "Merak ederim", "Onun özeli kalsın isterim", "Zaten her şeyi biliyorum"] },
+            { id: 512, text: "Onun bir hatasına başkası kızsa savunur musun?", options: ["Haksızsa savunmam", "Hatasını söylerim sonra savunurum", "Koşulsuz savunurum", "Birlikte kızarım"] },
+            { id: 513, text: "Bireysel başarı mı daha tatlı ortak başarı mı?", options: ["Bireysel, çünkü 'ben' yaptım", "Fark etmez", "İkisi de güzel", "Ortak, paylaşılan daha iyi"] },
+            { id: 514, text: "İkizine bir sürpriz yapmak senin için?", options: ["Çok keyifli", "Bazen yaparım", "Unuturum", "Gerek yok o her şeyi biliyor"] },
+            { id: 515, text: "Onun seni en çok etkileyen yönü nedir?", options: ["Güçlü karakteri", "Zekası", "Desteği", "Sadece yanımda olması"] }
+        ]
+    },
+    {
+        id: "w5-t3",
+        week: 5, order: 3,
+        title: "Test 3: İşbirliği Yeteneği",
+        description: "İki beyin birleşince ne oluyor?",
+        questions: [
+            { id: 521, text: "Bir yapbozu beraber tamamlarken ne hissedersin?", options: ["Uyumlu ve hızlı", "Bazen çatışmalı", "Zorlayıcı", "O yapsın ben izlerim"] },
+            { id: 522, text: "Fikir ayrılığına düştüğünüzde nasıl çözersiniz?", options: ["Tartışarak ortak nokta buluruz", "Kura çekeriz", "Eğilim kimdeyse ona uyarız", "Çözemeyiz, küseriz"] },
+            { id: 523, text: "İkizin bir şeyi yanlış yapınca ne dersin?", options: ["'Bunu şöyle dene' derim", "Hemen düzeltirim", "Alay ederim", "Hiç müdahale etmem"] },
+            { id: 524, text: "Takım oyunlarında beraber mi oynamayı seversiniz?", options: ["Farklı takımlarda olmak heyecanlı", "Uyumumuz iyidir ama gerek yok", "Mutlaka aynı takımda", "Yanımda değilse oynamam"] },
+            { id: 525, text: "Sizce dünyanın en iyi ekibi misiniz?", options: ["Kendi alanlarımızda evet", "Çok iyi bir ekibiz", "İdare eder", "Beraber bir şey yapamayız"] }
+        ]
+    },
+
+    // --- WEEK 6: Gelecek Vizyonu ---
     {
         id: "w6-t1",
-        week: 6,
-        order: 1,
-        title: "Test 1: Gelecek Vizyonu",
-        description: "Bireysel gelecek planlaması.",
+        week: 6, order: 1,
+        title: "Test 1: Kariyer ve Hayaller",
+        description: "Gelecek planlamandaki özerklik.",
         questions: [
-            { id: 601, text: "10 yıl sonra ikizinden ayrı bir şehirde yaşamayı düşünebilir misin?", options: ["Evet, heyecan verici", "Olabilir", "Zorunluysa", "Asla"] },
-            { id: 602, text: "Kariyer seçimini ne kadar kendi isteğinle yaptın?", options: ["%100 kendim", "Aile etkisi", "İkizimin tercihi", "Beraber seçtik"] },
-            { id: 603, text: "Evlenip ayrı eve çıkma fikri seni korkutuyor mu?", options: ["Hayır", "Biraz burukluk", "Endişeli", "Çok korkutucu"] },
-            { id: 604, text: "Gelecekte ikizinle iş ortağı olmak ister misin?", options: ["Hayır", "Belki", "İsterim", "Kesinlikle"] },
-            { id: 605, text: "Hayallerini kurarken 'ben' mi 'biz' mi dersin?", options: ["Ben", "Bazen biz", "Genelde biz", "Hep biz"] }
+            { id: 601, text: "Farklı bir şehirde üniversite okumak ister miydin?", options: ["Evet, özgürlük için", "Zaman zaman düşünüyorum", "Çok zorlanırım", "İkizim yoksa asla gitmem"] },
+            { id: 602, text: "Kariyer seçiminde senin için en önemli kriter?", options: ["Kendi yeteneklerim", "Geleceği parlak olması", "Ailemin ve ikizimin desteği", "Onunla aynı işi yapmak"] },
+            { id: 603, text: "Gelecekte farklı ülkelerde olsanız bağınız ne olur?", options: ["İletişimimiz hiç kopmaz", "Eskiye göre zayıflar", "Görüntülü konuşuruz", "Düşüncesi bile kötü"] },
+            { id: 604, text: "Kendini 10 yıl sonra nerede görüyorsun?", options: ["Kendi hayalimi gerçekleştirmiş olarak", "Bağımsız bir birey", "İkizimle ortak iş kurmuş", "Onun yanında"] },
+            { id: 605, text: "Kendi başarı hikayeni mi yazmak istersin?", options: ["Evet, imzamla", "Destek alarak", "Ortak bir hikaye", "Başkası yazsın"] }
         ]
     },
     {
         id: "w6-t2",
-        week: 6,
-        order: 2,
-        title: "Test 2: Kimlik Bütünleşmesi",
-        description: "Oluşturduğun yeni benlik algısı.",
+        week: 6, order: 2,
+        title: "Test 2: Değişim ve Dönüşüm",
+        description: "6 haftalık serüvenin özeti.",
         questions: [
-            { id: 611, text: "Kendini 3 kelimeyle anlat desek, ikizinle aynı kelimeleri mi seçersin?", options: ["Tamamen farklı", "Belki biri aynı", "Benzer", "Aynı"] },
-            { id: 612, text: "Kendini 'tekil' bir birey olarak görebiliyor musun?", options: ["Evet, net", "Çoğunlukla", "Bazen", "Zorlanıyorum"] },
-            { id: 613, text: "Kendi imajın (tarzın, saçın) oturdu mu?", options: ["Evet, özgünüm", "Gelişiyor", "Hala benziyoruz", "Aynıyız"] },
-            { id: 614, text: "Başkalarının sizi karıştırması artık seni etkiliyor mu?", options: ["Hiç", "Çok az", "Bazen", "Hala çok"] },
-            { id: 615, text: "İkiz olmak hayatının ne kadarını tanımlıyor?", options: ["Sadece bir parça", "Önemli bir kısım", "Büyük kısmı", "Her şeyi"] }
+            { id: 611, text: "Bu süreçte kendini daha iyi tanıdın mı?", options: ["Kesinlikle, farkındalığım arttı", "Genelde evet", "Biraz", "Aynıyım"] },
+            { id: 612, text: "Programa başlamadan önce 'biz' diyorken şimdi?", options: ["'Ben' demeyi öğrendim", "'Ben' ve 'Biz' dengelendi", "Hala 'Biz' diyormuşum gibi", "Sıradan bir süreçti"] },
+            { id: 613, text: "En çok hangi modül seni etkiledi?", options: ["Kimlik Gelişimi", "Sosyal Sınırlar", "Gelecek Vizyonu", "Karmaşık Duygular"] },
+            { id: 614, text: "Kendini ne kadar cesur hissediyorsun?", options: ["Tek başıma dünyayı fethedecek kadar", "Sevdiklerimle olunca evet", "Normale göre daha iyi", "Çekingen"] },
+            { id: 615, text: "Artık başkaları seni karıştırınca?", options: ["Artık bu benim sorunum değil derim", "Daha az bozuluyorum", "Hemen düzeltirim", "Alıştım"] }
         ]
     },
     {
         id: "w6-t3",
-        week: 6,
-        order: 3,
-        title: "Test 3: Mezuniyet ve Hazırlık",
-        description: "Programa veda ve hayata hazırlık.",
+        week: 6, order: 3,
+        title: "Test 3: Mezuniyet Hazırlığı",
+        description: "Hayata atılmaya hazır mısın?",
         questions: [
-            { id: 621, text: "Bu 6 haftalık süreçte değiştiğini hissediyor musun?", options: ["Çok değiştim", "Farkındalığım arttı", "Biraz", "Aynıyım"] },
-            { id: 622, text: "Geleceğe tek başına yürümeye hazır mısın?", options: ["Kesinlikle", "Hazırlanıyorum", "Endişeliyim", "Henüz değil"] },
-            { id: 623, text: "İkizine olan bağın sana güç mü veriyor yoksa seni kısıtlıyor mu?", options: ["Güç (Bağımsızım)", "Dengeli", "Biraz kısıtlıyor", "Kısıtlıyor"] },
-            { id: 624, text: "Hayatındaki en önemli kararları tek başına alabilir misin?", options: ["Evet", "Danışarak", "Zorlanırım", "Hayır"] },
-            { id: 625, text: "Program bittikten sonra da bireyselleşme çalışmalarına devam edecek misin?", options: ["Evet", "Gerektikçe", "Belki", "Hayır"] }
+            { id: 621, text: "Bu platformdan sonra ne yapacaksın?", options: ["Öğrendiklerimi uygulayacağım", "Günlük tutmaya devam", "Arada girerim", "Her şeyi unuturum"] },
+            { id: 622, text: "İkizine teşekkür etmek ister misin?", options: ["Yanımda olduğu için teşekkürler", "İkimize de teşekkür ederim", "Gerek yok", "Ona her zaman yanındayım derim"] },
+            { id: 623, text: "Kendi yolunda yürümeye hazır mısın?", options: ["Evet, bütün kalbimle", "Heyecanlıyım ama korkuyorum", "Yavaş yavaş", "Hazır değilim"] },
+            { id: 624, text: "Liderlik ettiğin bir geleceğe ne dersin?", options: ["Çok isterim", "Zaman gösterir", "Biraz korkutucu", "Fikrim yok"] },
+            { id: 625, text: "Son bir söz seç!", options: ["Ben benim, sen sensin", "Güzel bir serüvendi", "Teşekkürler", "Kalıcıyız"] }
         ]
     }
 ];
